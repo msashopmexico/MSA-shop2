@@ -4,7 +4,6 @@ body {
   padding: 0;
   text-align: center;
   color: #333;
-  position: relative;
 }
 
 header {
@@ -19,7 +18,6 @@ header {
 header h1 {
   margin: 0;
   font-size: 28px;
-  font-weight: bold;
 }
 
 .header-buttons button {
@@ -59,7 +57,7 @@ header h1 {
   margin: 20px 0;
 }
 
-.agregar {
+button.agregar {
   background: #b30000;
   color: white;
   border: none;
@@ -71,10 +69,11 @@ header h1 {
   transition: 0.3s;
 }
 
-.agregar:hover {
+button.agregar:hover {
   background: #e60000;
 }
 
+/* Panda fondo */
 body::before {
   content: '';
   position: fixed;
