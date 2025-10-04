@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSA Shop México</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <h1>MSA Shop México</h1>
+    <div class="header-buttons">
+      <button onclick="window.location.href='login.html'">Iniciar Sesión</button>
+      <button onclick="window.location.href='register.html'">Registrarse</button>
+      <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="producto">
+      <h2>Camiseta Custom</h2>
+      <img src="img/camisetaLisa.png" alt="Camiseta Custom">
+      <p>Sube tu diseño y crea tu propia camiseta personalizada.</p>
+      <p><strong>$300 MXN</strong></p>
+      <button id="btn-agregar" class="agregar">Agregar al carrito</button>
+    </div>
+  </div>
+
+  <!-- Modal Talla -->
+  <div id="modal-talla" class="modal">
+    <div class="modal-content">
+      <h3>Selecciona tu talla</h3>
+      <div class="tallas">
+        <button onclick="seleccionarTalla('S')">S</button>
+        <button onclick="seleccionarTalla('M')">M</button>
+        <button onclick="seleccionarTalla('L')">L</button>
+        <button onclick="seleccionarTalla('XL')">XL</button>
+      </div>
+      <button onclick="cerrarModal()">Cancelar</button>
+    </div>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Carrito - MSA Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="script.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Carrito</h1>
+    <nav>
+      <a href="index.html">Inicio</a>
+      <a href="login.html" id="login-link">Iniciar Sesión</a>
+      <a href="perfil.html" id="perfil-link" style="display:none;">Mi Perfil</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Productos en tu carrito</h2>
+    <ul id="lista-carrito"></ul>
+    <p id="total">Total: $0 MXN</p>
+    <button id="btn-vaciar">Vaciar carrito</button>
+    <button id="btn-proceder">Proceder a la compra</button>
+
+    <form id="form-compra" style="display:none;">
+      <h3>Datos de envío</h3>
+      <input type="text" id="nombre" placeholder="Nombre completo" required>
+      <input type="email" id="email" placeholder="Correo electrónico" required>
+      <input type="tel" id="telefono" placeholder="Teléfono" required>
+      <input type="text" id="direccion" placeholder="Dirección" required>
+      <input type="text" id="ciudad" placeholder="Ciudad" required>
+      <input type="text" id="codigo" placeholder="Código postal" required>
+
+      <label>Sube tu diseño:</label>
+      <input type="file" id="imagen" accept="image/*" required>
+
+      <button type="submit">Confirmar compra</button>
+    </form>
+
+    <p id="procesando" style="display:none;">Procesando pedido...</p>
+  </main>
+
+  <footer>
+    <p>© 2025 MSA Shop México</p>
+  </footer>
+</body>
+</html>

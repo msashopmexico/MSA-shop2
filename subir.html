@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Subir diseño - MSA</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <button onclick="window.location.href='index.html'">🏠 Inicio</button>
+  </header>
+
+  <div class="container">
+    <h2>Sube tu diseño</h2>
+    <div id="dropzone" class="dropzone">
+      Arrastra tu archivo aquí o haz click para seleccionar
+    </div>
+    <button class="btn" style="margin-top:20px;">Confirmar Pedido</button>
+  </div>
+
+  <script>
+    const dropzone = document.getElementById("dropzone");
+
+    dropzone.addEventListener("click", () => {
+      const input = document.createElement("input");
+      input.type = "file";
+      input.accept = "image/*";
+      input.click();
+    });
+
+    dropzone.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => {
+      dropzone.classList.remove("dragover");
+    });
+
+    dropzone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        dropzone.textContent = `✅ Archivo cargado: ${file.name}`;
+      }
+    });
+  </script>
+</body>
+</html>
