@@ -27,6 +27,14 @@
           <p><strong>Precio:</strong> $250 MXN</p>
         </div>
 
+        <!-- Panel de información de configuración -->
+        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 12px; color: #f39c12;">
+          <strong>🔧 Configuración Cloudinary:</strong><br>
+          Cloud Name: <span id="cloudNameStatus" style="color: #2ecc71;">dnzcup3ze ✅</span><br>
+          Upload Preset: <span id="presetStatus" style="color: #2ecc71;">image_design ✅</span><br>
+          <small>Si hay error 401, verifica que el preset "image_design" exista y sea "unsigned"</small>
+        </div>
+
         <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 2px dashed #3498db; background: rgba(255,255,255,0.1); color: white;">
         
         <div id="fileInfo" style="color: #f39c12; margin: 10px 0;"></div>
@@ -45,6 +53,19 @@
 
         <div id="errorMessage" style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #e74c3c; display: none;">
         </div>
+
+        <!-- Instrucciones para solucionar el error 401 -->
+        <div id="solucion401" style="background: rgba(243, 156, 18, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; display: none;">
+          <strong>🛠️ Para solucionar el error 401:</strong>
+          <ol style="text-align: left; font-size: 12px; margin: 10px 0;">
+            <li>Ve a <a href="https://cloudinary.com/console" target="_blank" style="color: #3498db;">Cloudinary Console</a></li>
+            <li>Settings → Upload → Upload presets</li>
+            <li>Busca el preset "image_design"</li>
+            <li>Si no existe, crea uno nuevo con ese nombre</li>
+            <li>Configura: <strong>Signing Mode = Unsigned</strong></li>
+            <li>Guarda y prueba de nuevo</li>
+          </ol>
+        </div>
       </div>
     </div>
   </main>
@@ -56,9 +77,9 @@
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <script>
-    // Configuración de Cloudinary - REEMPLAZA CON TUS DATOS
-    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze'; // Reemplaza con tu cloud name
-    const CLOUDINARY_UPLOAD_PRESET = 'image_design'; // Reemplaza con tu upload preset
+    // ✅ CONFIGURACIÓN CLOUDINARY CORRECTA
+    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze'; // Tu Cloud Name real
+    const CLOUDINARY_UPLOAD_PRESET = 'image_design'; // Tu Upload Preset real
 
     // Función para volver al inicio
     function volverAlInicio() {
@@ -102,6 +123,7 @@
     const fileInfo = document.getElementById('fileInfo');
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
+    const solucion401 = document.getElementById('solucion401');
     const tallaInfo = document.getElementById('talla-info');
 
     let archivoSeleccionado = null;
@@ -129,10 +151,10 @@
       const file = e.target.files[0];
       if (!file) return;
 
-      // Verificar tamaño máximo (más conservador)
-      const maxSize = 3 * 1024 * 1024; // 3MB
+      // Verificar tamaño máximo
+      const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
-        alert('❌ La imagen es demasiado grande. Máximo 3MB permitido.');
+        alert('❌ La imagen es demasiado grande. Máximo 5MB permitido.');
         fileInput.value = '';
         fileInfo.textContent = '';
         return;
@@ -162,32 +184,50 @@
 
     // Función para subir imagen a Cloudinary
     async function subirACloudinary(archivo) {
+      console.log('📤 Iniciando subida a Cloudinary...', {
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        uploadPreset: CLOUDINARY_UPLOAD_PRESET,
+        fileName: archivo.name,
+        fileSize: archivo.size
+      });
+
       const formData = new FormData();
       formData.append('file', archivo);
-      formData.append('imageE_design', CLOUDINARY_UPLOAD_PRESET);
-      formData.append('dnzcup3ze', CLOUDINARY_CLOUD_NAME);
+      formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
 
       try {
-        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-          method: 'POST',
-          body: formData
-        });
+        const response = await fetch(
+          `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, 
+          {
+            method: 'POST',
+            body: formData
+          }
+        );
 
+        const responseData = await response.json();
+        
         if (!response.ok) {
-          throw new Error(`Error Cloudinary: ${response.status}`);
+          console.error('❌ Error respuesta Cloudinary:', {
+            status: response.status,
+            data: responseData
+          });
+          
+          if (response.status === 401) {
+            throw new Error('401: Upload Preset "image_design" no encontrado o no es "unsigned". Verifica en Cloudinary Console.');
+          }
+          throw new Error(`Error ${response.status}: ${responseData.error?.message || 'Error de Cloudinary'}`);
         }
 
-        const data = await response.json();
-        console.log('✅ Imagen subida a Cloudinary:', data.secure_url);
-        return data.secure_url; // URL de la imagen
+        console.log('✅ Imagen subida exitosamente:', responseData.secure_url);
+        return responseData.secure_url;
 
       } catch (error) {
-        console.error('❌ Error subiendo a Cloudinary:', error);
-        throw new Error('No se pudo subir la imagen a Cloudinary');
+        console.error('❌ Error en subida a Cloudinary:', error);
+        throw error;
       }
     }
 
-    // Función para enviar el correo con URL de Cloudinary
+    // Función principal para enviar el pedido
     enviarBtn.addEventListener('click', async function() {
       if (!archivoSeleccionado) {
         alert('❌ Por favor selecciona un archivo primero');
@@ -204,61 +244,55 @@
       enviarBtn.textContent = 'Subiendo imagen...';
       enviarBtn.disabled = true;
       errorMessage.style.display = 'none';
+      solucion401.style.display = 'none';
 
       try {
         // 1. Subir imagen a Cloudinary
-        enviarBtn.textContent = 'Subiendo a Cloudinary...';
         const cloudinaryUrl = await subirACloudinary(archivoSeleccionado);
 
-        // 2. Enviar email con EmailJS (solo la URL, no la imagen completa)
+        // 2. Enviar email con EmailJS
         enviarBtn.textContent = 'Enviando información...';
 
         const templateParams = {
-          // Datos del usuario
-          nombre: userData.nombre || "Nombre no proporcionado",
-          email: userData.email || "Email no proporcionado",
-          telefono: userData.telefono || "Teléfono no proporcionado",
-          direccion: userData.direccion || "Dirección no proporcionada",
-          ciudad: "-",
-          codigo_postal: "-",
-          
-          // Información del pedido
+          nombre: userData.nombre || "No proporcionado",
+          email: userData.email || "No proporcionado",
+          telefono: userData.telefono || "No proporcionado",
+          direccion: userData.direccion || "No proporcionada",
+          ciudad: "Guadalajara",
+          codigo_postal: "45000",
           productos: `Camisa Personalizada - Talla: ${talla}`,
           total: "$250 MXN",
           fecha: new Date().toLocaleDateString('es-MX'),
-          
-          // URL de la imagen en Cloudinary (sin el payload grande)
           imagen_url: cloudinaryUrl,
-          
-          mensaje_adicional: `INFORMACIÓN DEL CLIENTE:
-Nombre: ${userData.nombre || "No proporcionado"}
-Email: ${userData.email || "No proporcionado"} 
-Teléfono: ${userData.telefono || "No proporcionado"}
-Dirección: ${userData.direccion || "No proporcionada"}
+          mensaje_adicional: `NUEVO PEDIDO CON DISEÑO PERSONALIZADO
 
-INFORMACIÓN DEL PEDIDO:
+INFORMACIÓN DEL CLIENTE:
+Nombre: ${userData.nombre}
+Email: ${userData.email}
+Teléfono: ${userData.telefono}
+Dirección: ${userData.direccion}
+
+DETALLES DEL PEDIDO:
 Producto: Camisa Personalizada
 Talla: ${talla}
 Precio: $250 MXN
 Fecha: ${new Date().toLocaleDateString('es-MX')}
 
-DISEÑO PERSONALIZADO:
-La imagen del diseño está disponible en: ${cloudinaryUrl}`
+🎨 DISEÑO SUBIDO:
+El cliente ha subido un diseño personalizado. Puedes verlo en:
+${cloudinaryUrl}`
         };
 
-        console.log('📧 Enviando email con URL de Cloudinary');
-
-        // Inicializar y enviar con EmailJS
+        console.log('📧 Enviando email...');
         await emailjs.init("PhV4Hp36EPOLiGe6t");
         await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
 
-        // Mostrar mensaje de éxito
+        // Éxito
         successMessage.style.display = 'block';
         enviarBtn.style.display = 'none';
         
         console.log('✅ Pedido completado exitosamente');
         
-        // Redirigir después de 2 segundos
         setTimeout(() => {
           window.location.href = 'index.html';
         }, 2000);
@@ -266,8 +300,14 @@ La imagen del diseño está disponible en: ${cloudinaryUrl}`
       } catch (error) {
         console.error('❌ Error en el proceso:', error);
         
-        // Mostrar error específico
-        errorMessage.textContent = `Error: ${error.message || 'Error desconocido'}`;
+        let mensajeError = error.message;
+        
+        if (error.message.includes('401')) {
+          mensajeError = 'Error 401: El Upload Preset "image_design" no existe o no está configurado como "unsigned".';
+          solucion401.style.display = 'block';
+        }
+        
+        errorMessage.textContent = mensajeError;
         errorMessage.style.display = 'block';
         
         // Restaurar botón
@@ -276,10 +316,14 @@ La imagen del diseño está disponible en: ${cloudinaryUrl}`
       }
     });
 
-    // Inicializar la página cuando cargue
+    // Inicializar la página
     document.addEventListener('DOMContentLoaded', function() {
       mostrarInfoPedido();
       cargarDatosUsuario();
+      console.log('🔧 Configuración Cloudinary:', {
+        cloudName: CLOUDINARY_CLOUD_NAME,
+        uploadPreset: CLOUDINARY_UPLOAD_PRESET
+      });
     });
   </script>
 </body>
