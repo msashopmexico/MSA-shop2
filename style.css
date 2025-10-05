@@ -2,8 +2,8 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  color: #333;
   text-align: center;
+  color: #333;
 }
 
 header {
@@ -74,7 +74,6 @@ button.agregar:hover {
   background: #e60000;
 }
 
-/* Panda fondo */
 body::before {
   content: '';
   position: fixed;
@@ -89,7 +88,7 @@ body::before {
   z-index: 1;
 }
 
-/* Modal Talla */
+/* Modal */
 .modal {
   display: none;
   position: fixed;

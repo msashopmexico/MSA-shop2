@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subir diseño - MSA Shop</title>
+  <title>Sube tu diseño - MSA Shop México</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>Sube tu diseño</h1>
+    <h1>MSA Shop México</h1>
     <div class="header-buttons">
       <button onclick="window.location.href='index.html'">Inicio</button>
       <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
@@ -16,70 +16,65 @@
   </header>
 
   <div class="container">
-    <div class="upload-box">
-      <h2>Arrastra o selecciona tu imagen (png, jpg, jpeg)</h2>
-      <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg">
-      <div id="previewContainer" style="margin-top:20px;"></div>
-      <button id="btnEnviar">Enviar pedido</button>
-      <p id="mensaje" style="color:green;"></p>
+    <h2>Sube tu diseño</h2>
+    <p>Formato permitido: PNG, JPG o JPEG</p>
+    <input type="file" id="imagen" accept=".png,.jpg,.jpeg">
+    <div id="preview-container" style="margin-top:20px;">
+      <img id="preview" src="" alt="" style="max-width:300px; display:none;">
     </div>
+    <button id="btn-enviar" class="agregar">Enviar diseño</button>
   </div>
 
   <script type="module">
-    import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
-    emailjs.init('PhV4Hp36EPOLiGe6t');
+    import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+    emailjs.init("PhV4Hp36EPOLiGe6t");
 
-    const fileInput = document.getElementById("fileInput");
-    const previewContainer = document.getElementById("previewContainer");
-    const btnEnviar = document.getElementById("btnEnviar");
-    const mensaje = document.getElementById("mensaje");
+    const input = document.getElementById("imagen");
+    const preview = document.getElementById("preview");
+    let base64File = "";
 
-    let uploadedFile = null;
-
-    fileInput.addEventListener("change", () => {
-      const file = fileInput.files[0];
+    input.addEventListener("change", () => {
+      const file = input.files[0];
       if (!file) return;
-      const validTypes = ["image/png","image/jpeg","image/jpg"];
-      if (!validTypes.includes(file.type)) {
-        alert("Solo se permiten archivos PNG o JPG/JPEG");
-        fileInput.value = "";
+      const ext = file.name.split('.').pop().toLowerCase();
+      if (!['png','jpg','jpeg'].includes(ext)) {
+        alert("Formato no permitido");
         return;
       }
-      uploadedFile = file;
+
       const reader = new FileReader();
-      reader.onload = (e) => {
-        previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width:300px;border-radius:12px;">`;
-      }
+      reader.onload = function(e) {
+        base64File = e.target.result;
+        preview.src = base64File;
+        preview.style.display = "block";
+      };
       reader.readAsDataURL(file);
     });
 
-    btnEnviar.addEventListener("click", async () => {
-      if (!uploadedFile) {
-        alert("Debes seleccionar una imagen");
-        return;
-      }
-
-      // Obtener carrito
+    document.getElementById("btn-enviar").addEventListener("click", async () => {
       const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      const productos = carrito.map(p => `${p.nombre} - Talla: ${p.talla}`).join(", ");
       const total = carrito.reduce((acc,p)=>acc+p.precio,0);
-
-      const formData = new FormData();
-      formData.append("imagen", uploadedFile);
+      const productos = carrito.map(p=>`${p.nombre} - Talla: ${p.talla}`).join("\n");
 
       try {
-        await emailjs.send('service_4450mrz', 'template_biyacaa', {
-          nombre: "Cliente MSA",
+        await emailjs.send("service_4450mrz", "template_biyacaa", {
+          nombre: "Cliente",
           email: "cliente@example.com",
           productos,
           total,
-          linkImagen: "Imagen subida (se adjunta en correo o usar link de almacenamiento)"
+          imagen: base64File,
+          fecha: new Date().toLocaleDateString(),
+          direccion: "N/A",
+          ciudad: "N/A",
+          codigo_postal: "N/A",
+          telefono: "N/A"
         });
-        mensaje.textContent = "✅ Pedido enviado correctamente!";
+        alert("✅ Diseño enviado correctamente. Revisa tu correo.");
         localStorage.removeItem("carrito");
-      } catch(err){
+        window.location.href = "index.html";
+      } catch (err) {
         console.error(err);
-        mensaje.textContent = "❌ Error al enviar el pedido";
+        alert("❌ Error al enviar el diseño.");
       }
     });
   </script>

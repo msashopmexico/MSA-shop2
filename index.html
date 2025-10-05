@@ -11,7 +11,7 @@
     <h1>MSA Shop México</h1>
     <div class="header-buttons">
       <button id="btn-login">Iniciar Sesión</button>
-      <button id="btn-logout" style="display:none;">Cerrar Sesión</button>
+      <button id="btn-signup">Registrarse</button>
       <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
     </div>
   </header>
@@ -26,7 +26,7 @@
     </div>
   </div>
 
-  <!-- Modal selección de talla -->
+  <!-- Modal Talla -->
   <div id="modal-talla" class="modal">
     <div class="modal-content">
       <h3>Selecciona tu talla</h3>
@@ -41,56 +41,6 @@
     </div>
   </div>
 
-  <script src="https://cdn.auth0.com/js/auth0-spa-js/1.26/auth0-spa-js.production.js"></script>
-  <script type="module">
-    let auth0 = null;
-    let productoSeleccionado = { nombre: "Camiseta Custom", precio: 300 };
-
-    async function initAuth() {
-      auth0 = await window.createAuth0Client({
-        domain: 'dev-r83h8xsmacihkvil.us.auth0.com',
-        client_id: 'PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf',
-        cacheLocation: 'localstorage'
-      });
-
-      const isAuthenticated = await auth0.isAuthenticated();
-
-      document.getElementById("btn-login").style.display = isAuthenticated ? "none" : "inline-block";
-      document.getElementById("btn-logout").style.display = isAuthenticated ? "inline-block" : "none";
-    }
-
-    window.onload = initAuth;
-
-    document.getElementById("btn-login").addEventListener("click", async () => {
-      await auth0.loginWithRedirect({ redirect_uri: window.location.href });
-    });
-
-    document.getElementById("btn-logout").addEventListener("click", async () => {
-      await auth0.logout({ returnTo: window.location.href });
-    });
-
-    // ==== Funciones Carrito ====
-    function seleccionarTalla(talla) {
-      productoSeleccionado.talla = talla;
-      let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      carrito.push(productoSeleccionado);
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-      document.getElementById("modal-talla").style.display = "none";
-      window.location.href = "upload.html";
-    }
-
-    function cerrarModal() {
-      document.getElementById("modal-talla").style.display = "none";
-    }
-
-    document.getElementById("btn-agregar").addEventListener("click", async () => {
-      const isAuthenticated = await auth0.isAuthenticated();
-      if (!isAuthenticated) {
-        alert("Debes iniciar sesión para comprar");
-        return;
-      }
-      document.getElementById("modal-talla").style.display = "flex";
-    });
-  </script>
+  <script type="module" src="main.js"></script>
 </body>
 </html>
