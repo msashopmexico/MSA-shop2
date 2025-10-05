@@ -47,8 +47,21 @@
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarAuthModal()">&times;</span>
       <h2 id="authTitle">Iniciar Sesión</h2>
-      <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input">
-      <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input">
+      
+      <!-- Campos para Login -->
+      <div id="loginFields">
+        <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input">
+        <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input">
+      </div>
+      
+      <!-- Campos adicionales para Registro -->
+      <div id="registerFields" style="display: none;">
+        <input type="text" id="authNombre" placeholder="👤 Nombre completo" class="auth-input">
+        <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input">
+        <input type="date" id="authFechaNacimiento" class="auth-input">
+        <small style="color: #666; display: block; margin-bottom: 10px;">Debes tener al menos 13 años</small>
+      </div>
+      
       <button class="comprar-btn" onclick="procesarAuth()">Continuar</button>
       <p id="authSwitch" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
     </div>
