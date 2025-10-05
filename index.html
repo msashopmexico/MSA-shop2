@@ -1,62 +1,39 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSA Shop México</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSA Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
 </head>
 <body>
-<header>
-  <h1>MSA Shop México</h1>
-  <div class="header-buttons">
-    <button id="btn-login">Iniciar Sesión</button>
-    <button id="btn-register">Registrarse</button>
-    <button id="btn-carrito">🛒 Carrito</button>
-  </div>
-</header>
+  <header>
+    <h1>MSA Shop</h1>
+    <button id="btn-login">Iniciar sesión</button>
+    <button id="btn-logout" style="display:none;">Cerrar sesión</button>
+    <a href="carrito.html">🛒 Carrito</a>
+  </header>
 
-<div class="container">
-  <div class="producto">
-    <h2>Camiseta Custom</h2>
-    <img src="img/camisetaLisaNegra.png" alt="Camiseta Custom">
-    <p>Sube tu diseño y crea tu propia camiseta personalizada.</p>
-    <p><strong>$300 MXN</strong></p>
-    <button id="btn-agregar" class="agregar">Agregar al carrito</button>
-  </div>
-</div>
+  <main>
+    <h2>Bienvenido a MSA Shop</h2>
+    <p>Debes iniciar sesión para poder comprar.</p>
 
-<!-- Modal Talla -->
-<div id="modal-talla" class="modal">
-  <div class="modal-content">
-    <h3>Selecciona tu talla</h3>
-    <div class="tallas">
-      <button onclick="seleccionarTalla('S')">S</button>
-      <button onclick="seleccionarTalla('M')">M</button>
-      <button onclick="seleccionarTalla('L')">L</button>
-      <button onclick="seleccionarTalla('XL')">XL</button>
-      <button onclick="seleccionarTalla('XXL')">XXL</button>
+    <div class="producto">
+      <img src="camisetaLisaNegra.png" alt="Camiseta Negra" width="200">
+      <p>Camiseta Negra - $300</p>
+      <button onclick="seleccionarTalla()">Seleccionar Talla</button>
     </div>
-    <button onclick="cerrarModal()">Cancelar</button>
-  </div>
-</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
-<script>
-  let auth0Client;
+    <!-- Modal tallas -->
+    <div id="modalTalla" class="modal" style="display:none;">
+      <div class="modal-content">
+        <h3>Selecciona tu talla</h3>
+        <button onclick="cerrarModal()">Cerrar</button>
+      </div>
+    </div>
+  </main>
 
-  async function initAuth() {
-    auth0Client = await createAuth0Client({
-      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
-      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
-      authorizationParams: {
-        redirect_uri: "https://msa-shop.netlify.app/"
-      }
-    });
-  }
-
-  window.onload = initAuth;
-</script>
-
+  <script src="main.js"></script>
 </body>
 </html>
