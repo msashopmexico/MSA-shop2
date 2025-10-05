@@ -1,37 +1,52 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>MSA Shop</title>
-<link rel="stylesheet" href="style.css">
-<script type="module" src="main.js" defer></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSA Shop</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<header>
-  <h1>MSA Shop</h1>
-  <div class="auth-buttons">
-    <button id="btn-login" class="btn-login">Iniciar Sesión</button>
-    <button id="btn-logout" class="btn-logout" style="display:none;">Cerrar Sesión</button>
-  </div>
-</header>
-
-<main>
-  <section class="producto">
-    <img src="img/camisetaLisaNegra.png" alt="Camiseta" class="producto-img">
-    <div class="producto-info">
-      <h2>Camiseta Lisa Negra</h2>
-      <p>$250 MXN</p>
-      <div class="tallas">
-        <button onclick="seleccionarTalla('S')">S</button>
-        <button onclick="seleccionarTalla('M')">M</button>
-        <button onclick="seleccionarTalla('L')">L</button>
-      </div>
-      <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
+  <header>
+    <h1>MSA Shop</h1>
+    <div class="auth-buttons">
+      <button class="btn-login">Iniciar sesión</button>
+      <button class="btn-register">Registrarse</button>
+      <button class="btn-carrito">🛒 Carrito</button>
     </div>
-  </section>
-</main>
+  </header>
 
-<img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
+  <main>
+    <section class="producto">
+      <img src="img/camisetaLisaNegra.png" alt="Camiseta Lisa Negra" class="producto-img">
+      <div class="producto-info">
+        <h2>Camiseta Lisa Negra</h2>
+        <p>$250 MXN</p>
+        <div class="tallas">
+          <button onclick="seleccionarTalla('S')">S</button>
+          <button onclick="seleccionarTalla('M')">M</button>
+          <button onclick="seleccionarTalla('L')">L</button>
+        </div>
+        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal de Confirmación -->
+  <div id="miModal" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal()">&times;</span>
+      <h2>Confirma tu compra</h2>
+      <p>Seleccionaste la camiseta en talla: <span id="tallaSeleccionada">Ninguna</span></p>
+      <button class="comprar-btn" onclick="irUpload()">Sube tu diseño</button>
+    </div>
+  </div>
+
+  <!-- Panda decorativo -->
+  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
+
+  <!-- Auth0 -->
+  <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2/dist/auth0-spa-js.production.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

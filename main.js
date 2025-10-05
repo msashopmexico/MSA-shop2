@@ -1,53 +1,61 @@
-import { createAuth0Client } from "https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2/dist/auth0-spa-js.production.js";
-
 let auth0 = null;
-let userProfile = null;
 let tallaSeleccionada = null;
 
-window.onload = async () => {
-  auth0 = await createAuth0Client({
+const initAuth = async () => {
+  auth0 = await window.createAuth0Client({
     domain: "dev-r83h8xsmacihkvil.us.auth0.com",
     client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
     cacheLocation: "localstorage",
     redirect_uri: "https://msa-shop.netlify.app/"
   });
 
-  // Manejar redirección de login
-  const query = window.location.search;
-  if (query.includes("code=") && query.includes("state=")) {
+  if (window.location.search.includes("code=")) {
     await auth0.handleRedirectCallback();
     window.history.replaceState({}, document.title, "/");
   }
 
   const isAuthenticated = await auth0.isAuthenticated();
-  if (isAuthenticated) {
-    userProfile = await auth0.getUser();
-    document.getElementById("btn-login").style.display = "none";
-    document.getElementById("btn-logout").style.display = "inline-block";
+  updateAuthButtons(isAuthenticated);
+};
+
+const updateAuthButtons = (logged) => {
+  const loginBtn = document.querySelector(".btn-login");
+  const registerBtn = document.querySelector(".btn-register");
+
+  if (logged) {
+    loginBtn.textContent = "Cerrar sesión";
+    loginBtn.onclick = async () => {
+      await auth0.logout({ returnTo: "https://msa-shop.netlify.app/" });
+    };
+    registerBtn.style.display = "none";
+  } else {
+    loginBtn.textContent = "Iniciar sesión";
+    loginBtn.onclick = async () => { await auth0.loginWithRedirect(); };
+    registerBtn.textContent = "Registrarse";
+    registerBtn.onclick = async () => { await auth0.loginWithRedirect({ screen_hint: "signup" }); };
+    registerBtn.style.display = "inline-block";
   }
+};
 
-  // Botones
-  document.getElementById("btn-login").addEventListener("click", () => auth0.loginWithRedirect());
-  document.getElementById("btn-logout").addEventListener("click", () => auth0.logout({ returnTo: window.location.origin }));
-}
-
-// Seleccionar talla
-window.seleccionarTalla = (talla) => {
+function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
-  alert("Talla seleccionada: " + talla);
+  document.getElementById("tallaSeleccionada").textContent = talla;
 }
 
-// Agregar al carrito
-window.agregarCarrito = () => {
-  if (!tallaSeleccionada) {
-    alert("Selecciona una talla antes de continuar.");
-    return;
-  }
-  if (!userProfile) {
-    alert("Debes iniciar sesión para agregar productos al carrito.");
-    auth0.loginWithRedirect();
-    return;
-  }
-  localStorage.setItem("productoTemp", JSON.stringify({ nombre:"Camiseta Lisa Negra", precio:250, talla:tallaSeleccionada }));
-  window.location.href = "upload.html";
+function agregarCarrito() {
+  if (!tallaSeleccionada) return alert("Selecciona una talla primero.");
+  auth0.isAuthenticated().then(logged => {
+    if (!logged) return alert("Debes iniciar sesión para agregar al carrito.");
+    document.getElementById("miModal").style.display = "flex";
+  });
 }
+
+function cerrarModal() {
+  document.getElementById("miModal").style.display = "none";
+}
+
+function irUpload() {
+  window.location.href = "upload.html?talla=" + tallaSeleccionada;
+}
+
+window.onload = initAuth;
