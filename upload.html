@@ -45,6 +45,15 @@
 
         <div id="errorMessage" style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #e74c3c; display: none;">
         </div>
+
+        <!-- Mensaje de usuario no autenticado -->
+        <div id="noAuthMessage" style="background: rgba(243, 156, 18, 0.2); padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; display: none;">
+          <h3 style="color: #f39c12; margin-bottom: 15px;">⚠️ Sesión no encontrada</h3>
+          <p style="margin-bottom: 15px;">Para subir un diseño necesitas iniciar sesión primero.</p>
+          <button onclick="volverAlInicio()" style="background: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+            Ir a Iniciar Sesión
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -57,34 +66,69 @@
 
   <script>
     // ✅ CONFIGURACIÓN CLOUDINARY CORRECTA
-    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze'; // Tu Cloud Name real
-    const CLOUDINARY_UPLOAD_PRESET = 'image_design'; // Tu Upload Preset real
+    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze';
+    const CLOUDINARY_UPLOAD_PRESET = 'image_design';
 
     // Función para volver al inicio
     function volverAlInicio() {
       window.location.href = 'index.html';
     }
 
-    // Función para obtener datos del usuario desde localStorage
+    // FUNCIÓN MEJORADA para obtener datos del usuario - compatible con móvil
     function obtenerDatosUsuario() {
       try {
-        const userData = localStorage.getItem('userData');
+        console.log('🔍 Buscando datos de usuario en localStorage...');
+        
+        // 1. Buscar en userData (formato más común)
+        let userData = localStorage.getItem('userData');
         if (userData) {
+          console.log('✅ Datos encontrados en userData');
           return JSON.parse(userData);
         }
-        
+
+        // 2. Buscar en firebase:authUser (formato Firebase)
+        userData = localStorage.getItem('firebase:authUser:AIzaSyBp_1g4oXv7R8LqI5k9p1qV6X2Y7Z8x9X0:msa-shop');
+        if (userData) {
+          console.log('✅ Datos encontrados en Firebase auth');
+          const parsed = JSON.parse(userData);
+          // Extraer datos del formato Firebase
+          if (parsed && parsed.uid) {
+            return {
+              nombre: parsed.displayName || 'Usuario',
+              email: parsed.email || '',
+              telefono: parsed.phoneNumber || '',
+              uid: parsed.uid
+            };
+          }
+        }
+
+        // 3. Buscar en todas las claves de localStorage que contengan userData
         const keys = Object.keys(localStorage);
         for (let key of keys) {
-          if (key.startsWith('userData_')) {
-            const data = localStorage.getItem(key);
-            if (data) {
-              return JSON.parse(data);
+          if (key.includes('userData') || key.includes('user')) {
+            try {
+              const data = localStorage.getItem(key);
+              const parsed = JSON.parse(data);
+              if (parsed && (parsed.email || parsed.nombre)) {
+                console.log('✅ Datos encontrados en clave:', key);
+                return parsed;
+              }
+            } catch (e) {
+              continue;
             }
           }
         }
-        
-        console.warn('⚠️ No se encontraron datos del usuario en localStorage');
+
+        // 4. Buscar en sessionStorage como fallback
+        userData = sessionStorage.getItem('userData');
+        if (userData) {
+          console.log('✅ Datos encontrados en sessionStorage');
+          return JSON.parse(userData);
+        }
+
+        console.warn('❌ No se encontraron datos de usuario en ningún almacenamiento');
         return null;
+
       } catch (error) {
         console.error('❌ Error obteniendo datos del usuario:', error);
         return null;
@@ -102,6 +146,7 @@
     const fileInfo = document.getElementById('fileInfo');
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
+    const noAuthMessage = document.getElementById('noAuthMessage');
     const tallaInfo = document.getElementById('talla-info');
 
     let archivoSeleccionado = null;
@@ -112,15 +157,24 @@
       tallaInfo.textContent = talla;
     }
 
-    // Cargar datos del usuario al iniciar
+    // Cargar datos del usuario al iniciar - VERSIÓN MEJORADA
     function cargarDatosUsuario() {
       userData = obtenerDatosUsuario();
+      
       if (userData) {
-        console.log('✅ Datos del usuario cargados:', userData);
+        console.log('✅ Usuario autenticado:', userData);
+        // Mostrar interfaz normal
+        fileInput.style.display = 'block';
+        enviarBtn.style.display = 'block';
+        noAuthMessage.style.display = 'none';
       } else {
-        console.warn('⚠️ Usuario no autenticado o datos no encontrados');
-        alert('❌ Debes iniciar sesión para continuar');
-        window.location.href = 'index.html';
+        console.warn('⚠️ Usuario no autenticado');
+        // Ocultar interfaz de subida y mostrar mensaje
+        fileInput.style.display = 'none';
+        enviarBtn.style.display = 'none';
+        noAuthMessage.style.display = 'block';
+        
+        // No redirigir automáticamente, solo mostrar mensaje
       }
     }
 
@@ -292,8 +346,24 @@ ${cloudinaryUrl}`
       }
     });
 
+    // DEBUG: Mostrar todo el localStorage al cargar
+    function debugLocalStorage() {
+      console.log('🔍 DEBUG - Todo el localStorage:');
+      const keys = Object.keys(localStorage);
+      keys.forEach(key => {
+        try {
+          const value = localStorage.getItem(key);
+          console.log(`📝 ${key}:`, value);
+        } catch (e) {
+          console.log(`📝 ${key}: [No se puede leer]`);
+        }
+      });
+    }
+
     // Inicializar la página
     document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Inicializando página upload.html');
+      debugLocalStorage(); // Para debugging
       mostrarInfoPedido();
       cargarDatosUsuario();
     });
