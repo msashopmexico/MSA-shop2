@@ -33,7 +33,6 @@
   </main>
 
   <!-- Modal de Confirmación -->
-  <!-- Modal de Confirmación -->
   <div id="miModal" class="modal">
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarModal()">&times;</span>
@@ -58,6 +57,9 @@
       <!-- Campos adicionales para Registro -->
       <div id="registerFields" style="display: none;">
         <input type="text" id="authNombre" placeholder="👤 Nombre completo" class="auth-input">
+        <input type="email" id="registerEmail" placeholder="📧 Email" class="auth-input">
+        <input type="password" id="registerPassword" placeholder="🔒 Contraseña" class="auth-input">
+        <input type="tel" id="authTelefono" placeholder="📞 Número de teléfono" class="auth-input">
         <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input">
         <input type="date" id="authFechaNacimiento" class="auth-input">
         <small style="color: #666; display: block; margin-bottom: 10px;">Debes tener al menos 13 años</small>
@@ -74,6 +76,218 @@
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
-  <script src="main.js"></script>
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyBp_1g4oXv7R8LqI5k9p1qV6X2Y7Z8x9X0",
+      authDomain: "msa-shop.firebaseapp.com",
+      projectId: "msa-shop",
+      storageBucket: "msa-shop.firebasestorage.app",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef123456"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    let isLoginMode = true;
+    let tallaSeleccionada = '';
+
+    // Modal functions
+    function seleccionarTalla(talla) {
+      tallaSeleccionada = talla;
+      document.querySelectorAll('.tallas button').forEach(btn => {
+        btn.classList.remove('seleccionada');
+      });
+      event.target.classList.add('seleccionada');
+    }
+
+    function agregarCarrito() {
+      if (!tallaSeleccionada) {
+        alert('Por favor selecciona una talla');
+        return;
+      }
+      
+      // Verificar si el usuario está autenticado
+      const user = auth.currentUser;
+      if (user) {
+        // Usuario autenticado, mostrar modal de confirmación
+        document.getElementById('tallaSeleccionada').textContent = tallaSeleccionada;
+        document.getElementById('miModal').style.display = 'block';
+      } else {
+        // Usuario no autenticado, mostrar modal de auth
+        document.getElementById('authModal').style.display = 'block';
+      }
+    }
+
+    function cerrarModal() {
+      document.getElementById('miModal').style.display = 'none';
+    }
+
+    function cerrarAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
+
+    function irUpload() {
+      if (tallaSeleccionada) {
+        window.location.href = `upload.html?talla=${tallaSeleccionada}`;
+      }
+    }
+
+    // Auth functions
+    function toggleAuthMode() {
+      isLoginMode = !isLoginMode;
+      const authTitle = document.getElementById('authTitle');
+      const loginFields = document.getElementById('loginFields');
+      const registerFields = document.getElementById('registerFields');
+      const authSwitch = document.getElementById('authSwitch');
+
+      if (isLoginMode) {
+        authTitle.textContent = 'Iniciar Sesión';
+        loginFields.style.display = 'block';
+        registerFields.style.display = 'none';
+        authSwitch.textContent = '¿No tienes cuenta? Regístrate aquí';
+      } else {
+        authTitle.textContent = 'Registrarse';
+        loginFields.style.display = 'none';
+        registerFields.style.display = 'block';
+        authSwitch.textContent = '¿Ya tienes cuenta? Inicia sesión aquí';
+      }
+    }
+
+    async function procesarAuth() {
+      const email = isLoginMode ? 
+        document.getElementById('authEmail').value : 
+        document.getElementById('registerEmail').value;
+      
+      const password = isLoginMode ? 
+        document.getElementById('authPassword').value : 
+        document.getElementById('registerPassword').value;
+
+      if (!email || !password) {
+        alert('Por favor completa todos los campos');
+        return;
+      }
+
+      try {
+        if (isLoginMode) {
+          // Login
+          await auth.signInWithEmailAndPassword(email, password);
+          alert('¡Bienvenido de nuevo!');
+        } else {
+          // Registro
+          const nombre = document.getElementById('authNombre').value;
+          const telefono = document.getElementById('authTelefono').value;
+          const direccion = document.getElementById('authDireccion').value;
+          const fechaNacimiento = document.getElementById('authFechaNacimiento').value;
+
+          if (!nombre || !telefono || !direccion || !fechaNacimiento) {
+            alert('Por favor completa todos los campos del registro');
+            return;
+          }
+
+          // Verificar edad (al menos 13 años)
+          const fechaNac = new Date(fechaNacimiento);
+          const hoy = new Date();
+          const edad = hoy.getFullYear() - fechaNac.getFullYear();
+          const mes = hoy.getMonth() - fechaNac.getMonth();
+          
+          if (edad < 13 || (edad === 13 && mes < 0)) {
+            alert('Debes tener al menos 13 años para registrarte');
+            return;
+          }
+
+          // Crear usuario en Firebase Auth
+          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+          const user = userCredential.user;
+
+          // Guardar datos adicionales en localStorage
+          const userData = {
+            nombre: nombre,
+            email: email,
+            telefono: telefono,
+            direccion: direccion,
+            fechaNacimiento: fechaNacimiento,
+            uid: user.uid
+          };
+
+          localStorage.setItem('userData', JSON.stringify(userData));
+          alert('¡Registro exitoso! Bienvenido a MSA Shop');
+        }
+
+        // Cerrar modal y abrir modal de confirmación de compra
+        cerrarAuthModal();
+        if (tallaSeleccionada) {
+          document.getElementById('tallaSeleccionada').textContent = tallaSeleccionada;
+          document.getElementById('miModal').style.display = 'block';
+        }
+
+      } catch (error) {
+        console.error('Error de autenticación:', error);
+        let mensajeError = 'Error: ';
+        
+        switch (error.code) {
+          case 'auth/email-already-in-use':
+            mensajeError += 'Este email ya está registrado';
+            break;
+          case 'auth/invalid-email':
+            mensajeError += 'Email inválido';
+            break;
+          case 'auth/weak-password':
+            mensajeError += 'La contraseña es muy débil';
+            break;
+          case 'auth/user-not-found':
+            mensajeError += 'Usuario no encontrado';
+            break;
+          case 'auth/wrong-password':
+            mensajeError += 'Contraseña incorrecta';
+            break;
+          default:
+            mensajeError += error.message;
+        }
+        
+        alert(mensajeError);
+      }
+    }
+
+    // Event listeners para botones de auth
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelector('.btn-login').addEventListener('click', function() {
+        isLoginMode = true;
+        toggleAuthMode();
+        document.getElementById('authModal').style.display = 'block';
+      });
+
+      document.querySelector('.btn-register').addEventListener('click', function() {
+        isLoginMode = false;
+        toggleAuthMode();
+        document.getElementById('authModal').style.display = 'block';
+      });
+
+      // Verificar si hay usuario autenticado al cargar la página
+      auth.onAuthStateChanged((user) => {
+        if (user) {
+          console.log('Usuario autenticado:', user);
+          // Opcional: Actualizar la UI para mostrar que está logueado
+        } else {
+          console.log('Usuario no autenticado');
+        }
+      });
+    });
+
+    // Cerrar modales al hacer clic fuera
+    window.onclick = function(event) {
+      const miModal = document.getElementById('miModal');
+      const authModal = document.getElementById('authModal');
+      
+      if (event.target === miModal) {
+        cerrarModal();
+      }
+      if (event.target === authModal) {
+        cerrarAuthModal();
+      }
+    }
+  </script>
 </body>
 </html>
