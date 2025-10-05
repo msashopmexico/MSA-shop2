@@ -1,97 +1,63 @@
 <!DOCTYPE html>
-<link rel="stylesheet" href="style.css">
 <html lang="es">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sube tu diseño - MSA Shop</title>
-<link rel="stylesheet" href="css/style.css">
+<title>Subir diseño - MSA Shop</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 <header>
-  <h1>MSA Shop México</h1>
+  <h1>Sube tu diseño</h1>
   <div class="header-buttons">
     <button onclick="window.location.href='index.html'">Inicio</button>
-    <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
-    <button onclick="window.location.href='logout.html'">Cerrar sesión</button>
+    <button onclick="window.location.href='carrito.html'">Carrito</button>
   </div>
 </header>
 
 <div class="container">
   <div class="producto">
-    <h2>Sube tu diseño</h2>
-    <div id="upload-box" style="border:2px dashed #b30000; padding:30px; border-radius:12px;">
-      <input type="file" id="file-input" accept=".png,.jpg,.jpeg">
-      <p>Arrastra o selecciona tu imagen</p>
-      <img id="preview" style="max-width:250px; margin-top:15px; display:none;">
+    <h2>Preview de tu diseño</h2>
+    <div id="preview-container">
+      <img id="preview" src="" alt="Preview" style="max-width:300px; display:none;"/>
     </div>
-    <button id="btn-subir" class="agregar">Enviar pedido</button>
+    <input type="file" id="file-input" accept="image/png,image/jpeg">
+    <button id="upload-btn">Enviar diseño</button>
   </div>
 </div>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-app.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-auth.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.3.0/firebase-storage.js";
-import * as emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
 
-// Firebase config
-const firebaseConfig = {
-  apiKey: "AIzaSyBLicSBL_Lua8LSol5Retp1NIrNnjycpRw",
-  authDomain: "msa-shop-f6215.firebaseapp.com",
-  projectId: "msa-shop-f6215",
-  storageBucket: "msa-shop-f6215.appspot.com",
-  messagingSenderId: "519359225705",
-  appId: "1:519359225705:web:69e30095453be7371c67f8"
-};
+emailjs.init('PhV4Hp36EPOLiGe6t');
 
-// Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const storage = getStorage(app);
-
-// EmailJS
-emailjs.init("PhV4Hp36EPOLiGe6t");
-
-const input = document.getElementById("file-input");
+const fileInput = document.getElementById("file-input");
 const preview = document.getElementById("preview");
 
-input.addEventListener("change", (e) => {
+fileInput.addEventListener("change", (e) => {
   const file = e.target.files[0];
   if (!file) return;
-  if (!['image/png','image/jpg','image/jpeg'].includes(file.type)) return alert("Solo PNG/JPG/JPEG");
-
   const reader = new FileReader();
-  reader.onload = () => {
-    preview.src = reader.result;
-    preview.style.display = "block";
-  };
+  reader.onload = function() { preview.src = reader.result; preview.style.display = "block"; }
   reader.readAsDataURL(file);
 });
 
-document.getElementById("btn-subir").addEventListener("click", async () => {
-  const user = auth.currentUser;
-  if (!user) return alert("⚠️ Debes iniciar sesión");
+document.getElementById("upload-btn").addEventListener("click", async () => {
+  const file = fileInput.files[0];
+  if (!file) { alert("Selecciona un archivo."); return; }
 
-  const file = input.files[0];
-  if (!file) return alert("Selecciona un archivo primero");
+  const formData = new FormData();
+  formData.append("file", file);
 
-  const storageRef = ref(storage, `disenos/${user.uid}/${file.name}`);
-  await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(storageRef);
-
-  // Enviar correo
-  emailjs.send('service_4450mrz', 'template_biyacaa', {
-    nombre: user.displayName || user.email,
-    email: user.email,
-    productos: 'Camiseta Custom',
-    total: '$300 MXN',
-    direccion: '---',
-    ciudad: '---',
-    codigo_postal: '---',
-    linkImagen: url
-  }).then(() => alert("✅ Pedido enviado y correo confirmado!"))
-    .catch(err => alert("❌ Error al enviar correo: " + err));
+  try {
+    await emailjs.send("service_4450mrz","template_biyacaa",{
+      nombre: "Cliente",
+      email: "cliente@correo.com",
+      productos: JSON.stringify(localStorage.getItem("carrito")),
+      link_diseno: preview.src
+    });
+    alert("✅ Diseño enviado correctamente!");
+  } catch(e) { console.error(e); alert("❌ Error al enviar el diseño."); }
 });
 </script>
 </body>
