@@ -1,9 +1,9 @@
-let auth0 = null;
+let auth0Client = null;
 let tallaSeleccionada = null;
 
 async function initAuth() {
-  // Crea el cliente Auth0 usando la versión global
-  auth0 = await auth0SpaJs.createAuth0Client({
+  // Crea el cliente Auth0 usando el objeto global "auth0"
+  auth0Client = await auth0.createAuth0Client({
     domain: "dev-r83h8xsmacihkvil.us.auth0.com",
     client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
     cacheLocation: "localstorage",
@@ -12,11 +12,11 @@ async function initAuth() {
 
   // Maneja callback de redirección
   if (window.location.search.includes("code=")) {
-    await auth0.handleRedirectCallback();
+    await auth0Client.handleRedirectCallback();
     window.history.replaceState({}, document.title, "/");
   }
 
-  const logged = await auth0.isAuthenticated();
+  const logged = await auth0Client.isAuthenticated();
   updateAuthButtons(logged);
 }
 
@@ -26,13 +26,13 @@ function updateAuthButtons(logged) {
 
   if (logged) {
     loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => auth0.logout({ returnTo: window.location.origin });
+    loginBtn.onclick = () => auth0Client.logout({ returnTo: window.location.origin });
     registerBtn.style.display = "none";
   } else {
     loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => auth0.loginWithRedirect();
+    loginBtn.onclick = () => auth0Client.loginWithRedirect();
     registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => auth0.loginWithRedirect({ screen_hint: "signup" });
+    registerBtn.onclick = () => auth0Client.loginWithRedirect({ screen_hint: "signup" });
     registerBtn.style.display = "inline-block";
   }
 }
@@ -46,7 +46,7 @@ function seleccionarTalla(talla) {
 async function agregarCarrito() {
   if (!tallaSeleccionada) return alert("Selecciona una talla primero.");
 
-  const logged = await auth0.isAuthenticated();
+  const logged = await auth0Client.isAuthenticated();
   if (!logged) return alert("Debes iniciar sesión para agregar al carrito.");
 
   document.getElementById("miModal").style.display = "flex";
