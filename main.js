@@ -10,6 +10,15 @@ let tallaSeleccionada = null;
 let authMode = 'login';
 let currentUserData = null;
 
+// Función segura para obtener elementos del DOM
+function getElement(id) {
+  const element = document.getElementById(id);
+  if (!element) {
+    console.warn(`⚠️ Elemento no encontrado: ${id}`);
+  }
+  return element;
+}
+
 // Inicializar Firebase
 function initFirebase() {
   try {
@@ -52,7 +61,10 @@ function updateAuthUI(isLoggedIn, userEmail = '') {
   const loginBtn = document.querySelector(".btn-login");
   const registerBtn = document.querySelector(".btn-register");
 
-  if (!loginBtn || !registerBtn) return;
+  if (!loginBtn || !registerBtn) {
+    console.warn('⚠️ Botones de auth no encontrados');
+    return;
+  }
 
   if (isLoggedIn) {
     const nombre = currentUserData?.nombre || userEmail.split('@')[0];
@@ -71,35 +83,57 @@ function updateAuthUI(isLoggedIn, userEmail = '') {
 function showAuthModal(mode) {
   authMode = mode;
   
-  document.getElementById('authTitle').textContent = 
-    mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
-  document.getElementById('authButtonText').textContent = 
-    mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
-  document.getElementById('authSwitch').textContent = mode === 'login' ? 
-    '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
+  // Verificar y actualizar elementos de forma segura
+  const authTitle = getElement('authTitle');
+  const authButtonText = getElement('authButtonText');
+  const authSwitch = getElement('authSwitch');
+  const loginFields = getElement('loginFields');
+  const registerFields = getElement('registerFields');
+  const authModal = getElement('authModal');
   
-  // Mostrar/ocultar campos según el modo
-  document.getElementById('loginFields').style.display = mode === 'login' ? 'block' : 'none';
-  document.getElementById('registerFields').style.display = mode === 'register' ? 'block' : 'none';
+  if (authTitle) authTitle.textContent = mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
+  if (authButtonText) authButtonText.textContent = mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
+  if (authSwitch) authSwitch.textContent = mode === 'login' ? '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
   
-  // Limpiar campos
-  document.getElementById('authEmail').value = '';
-  document.getElementById('authPassword').value = '';
+  if (loginFields) loginFields.style.display = mode === 'login' ? 'block' : 'none';
+  if (registerFields) registerFields.style.display = mode === 'register' ? 'block' : 'none';
+  
+  // Limpiar campos de forma segura
+  const authEmail = getElement('authEmail');
+  const authPassword = getElement('authPassword');
+  
+  if (authEmail) authEmail.value = '';
+  if (authPassword) authPassword.value = '';
   
   if (mode === 'register') {
-    document.getElementById('authNombre').value = '';
-    document.getElementById('authEmailRegistro').value = '';
-    document.getElementById('authTelefono').value = '';
-    document.getElementById('authDireccion').value = '';
-    document.getElementById('authFechaNacimiento').value = '';
-    document.getElementById('authPasswordRegistro').value = '';
+    const authNombre = getElement('authNombre');
+    const authEmailRegistro = getElement('authEmailRegistro');
+    const authTelefono = getElement('authTelefono');
+    const authDireccion = getElement('authDireccion');
+    const authFechaNacimiento = getElement('authFechaNacimiento');
+    const authPasswordRegistro = getElement('authPasswordRegistro');
+    
+    if (authNombre) authNombre.value = '';
+    if (authEmailRegistro) authEmailRegistro.value = '';
+    if (authTelefono) authTelefono.value = '';
+    if (authDireccion) authDireccion.value = '';
+    if (authFechaNacimiento) authFechaNacimiento.value = '';
+    if (authPasswordRegistro) authPasswordRegistro.value = '';
   }
   
-  document.getElementById('authModal').style.display = 'flex';
+  if (authModal) {
+    authModal.style.display = 'flex';
+  } else {
+    console.error('❌ Modal de autenticación no encontrado');
+    alert('Error: No se puede mostrar el formulario de autenticación');
+  }
 }
 
 function cerrarAuthModal() {
-  document.getElementById('authModal').style.display = 'none';
+  const authModal = getElement('authModal');
+  if (authModal) {
+    authModal.style.display = 'none';
+  }
 }
 
 function toggleAuthMode() {
@@ -130,12 +164,24 @@ async function procesarAuth() {
   try {
     if (authMode === 'register') {
       // VALIDACIONES PARA REGISTRO
-      const nombre = document.getElementById('authNombre').value;
-      const email = document.getElementById('authEmailRegistro').value;
-      const telefono = document.getElementById('authTelefono').value;
-      const direccion = document.getElementById('authDireccion').value;
-      const fechaNacimiento = document.getElementById('authFechaNacimiento').value;
-      const password = document.getElementById('authPasswordRegistro').value;
+      const authNombre = getElement('authNombre');
+      const authEmailRegistro = getElement('authEmailRegistro');
+      const authTelefono = getElement('authTelefono');
+      const authDireccion = getElement('authDireccion');
+      const authFechaNacimiento = getElement('authFechaNacimiento');
+      const authPasswordRegistro = getElement('authPasswordRegistro');
+      
+      if (!authNombre || !authEmailRegistro || !authTelefono || !authDireccion || !authFechaNacimiento || !authPasswordRegistro) {
+        alert('❌ Error: Campos del formulario no encontrados');
+        return;
+      }
+
+      const nombre = authNombre.value;
+      const email = authEmailRegistro.value;
+      const telefono = authTelefono.value;
+      const direccion = authDireccion.value;
+      const fechaNacimiento = authFechaNacimiento.value;
+      const password = authPasswordRegistro.value;
 
       if (!nombre || !email || !telefono || !direccion || !fechaNacimiento || !password) {
         alert('❌ Por favor completa todos los campos');
@@ -185,8 +231,16 @@ async function procesarAuth() {
 
     } else {
       // LOGIN
-      const email = document.getElementById('authEmail').value;
-      const password = document.getElementById('authPassword').value;
+      const authEmail = getElement('authEmail');
+      const authPassword = getElement('authPassword');
+      
+      if (!authEmail || !authPassword) {
+        alert('❌ Error: Campos de login no encontrados');
+        return;
+      }
+
+      const email = authEmail.value;
+      const password = authPassword.value;
 
       if (!email || !password) {
         alert('❌ Por favor completa todos los campos');
@@ -238,12 +292,12 @@ async function logout() {
   }
 }
 
-// Funciones del carrito - CORREGIDAS
+// Funciones del carrito
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
   
   // VERIFICAR que el elemento existe antes de modificarlo
-  const tallaElement = document.getElementById("tallaSeleccionada");
+  const tallaElement = getElement("tallaSeleccionada");
   if (tallaElement) {
     tallaElement.textContent = talla;
   }
@@ -273,7 +327,7 @@ async function agregarCarrito() {
   }
 
   // VERIFICAR que el modal existe antes de mostrarlo
-  const modal = document.getElementById("miModal");
+  const modal = getElement("miModal");
   if (modal) {
     modal.style.display = "flex";
   } else {
@@ -283,7 +337,7 @@ async function agregarCarrito() {
 }
 
 function cerrarModal() {
-  const modal = document.getElementById("miModal");
+  const modal = getElement("miModal");
   if (modal) {
     modal.style.display = "none";
   }
