@@ -20,6 +20,10 @@
       max-width: 300px;
       margin: 15px 0;
       border-radius: 10px;
+      display: none;
+    }
+    .upload-input {
+      margin: 20px 0;
     }
   </style>
 </head>
@@ -38,20 +42,26 @@
       <h2>Sube tu diseño personalizado</h2>
       <p>Talla seleccionada: <strong id="talla-info">?</strong></p>
       
-      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="margin: 20px 0;">
+      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" class="upload-input">
       <br>
-      <img id="previewImg" src="" alt="Vista previa" style="display: none;">
+      <img id="previewImg" src="" alt="Vista previa">
       <br>
-      <button id="enviarBtn" class="comprar-btn">Enviar diseño</button>
+      <button id="enviarBtn" class="comprar-btn">Enviar diseño y confirmar pedido</button>
     </div>
   </main>
 
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  
   <script>
+    // Configurar EmailJS con TUS CREDENCIALES
+    emailjs.init("PhV4Hp36EPOLiGe6t"); // Tu Public Key de EmailJS
+
     // Mostrar talla seleccionada
     const urlParams = new URLSearchParams(window.location.search);
-    const talla = urlParams.get('talla') || localStorage.getItem('tallaSeleccionada') || 'No especificada';
+    const talla = urlParams.get('talla') || 'No especificada';
     document.getElementById('talla-info').textContent = talla;
 
     const fileInput = document.getElementById('fileInput');
@@ -78,17 +88,56 @@
       reader.readAsDataURL(file);
     });
 
-    enviarBtn.addEventListener('click', function() {
+    enviarBtn.addEventListener('click', async function() {
       if (!archivoSeleccionado) {
-        alert('Por favor selecciona un archivo primero');
+        alert('❌ Por favor selecciona un archivo primero');
         return;
       }
 
-      alert('✅ Diseño enviado correctamente! (Función de email en desarrollo)');
-      // Aquí iría el código para enviar el email con EmailJS
-      setTimeout(() => {
-        window.location.href = 'index.html';
-      }, 1500);
+      // Mostrar loading
+      enviarBtn.textContent = 'Enviando...';
+      enviarBtn.disabled = true;
+
+      try {
+        // Convertir archivo a Base64 para EmailJS
+        const reader = new FileReader();
+        reader.onload = async function() {
+          const imagenBase64 = reader.result;
+
+          // Datos para el email
+          const templateParams = {
+            to_name: "MSA Shop",
+            from_name: "Cliente MSA",
+            user_email: "cliente@msashop.com", // En producción, usar email del usuario logueado
+            talla: talla,
+            producto: "Camiseta Lisa Negra",
+            precio: "250 MXN",
+            fecha: new Date().toLocaleDateString('es-MX'),
+            imagen: imagenBase64,
+            mensaje: `Nuevo pedido de camiseta personalizada. Talla: ${talla}`
+          };
+
+          // Enviar email con EmailJS
+          await emailjs.send(
+            "service_4450mrz", // Tu Service ID
+            "template_biyacaa", // Tu Template ID
+            templateParams
+          );
+
+          alert('✅ ¡Pedido confirmado! Se ha enviado el diseño por email.');
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 2000);
+
+        };
+        reader.readAsDataURL(archivoSeleccionado);
+
+      } catch (error) {
+        console.error('Error al enviar:', error);
+        alert('❌ Error al enviar el pedido. Intenta nuevamente.');
+        enviarBtn.textContent = 'Enviar diseño y confirmar pedido';
+        enviarBtn.disabled = false;
+      }
     });
   </script>
 </body>

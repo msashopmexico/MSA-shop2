@@ -1,31 +1,27 @@
-// Firebase Configuration - USA TUS CREDENCIALES EXISTENTES
+// Firebase Configuration - TUS CREDENCIALES NUEVAS
 const firebaseConfig = {
-  apiKey: "AIzaSyBLicSBL_Lua8LSol5Retp1NIrNnjycpRw",
-  authDomain: "msa-shop-f6215.firebaseapp.com",
-  projectId: "msa-shop-f6215",
-  storageBucket: "msa-shop-f6215.appspot.com",
-  messagingSenderId: "519359225705",
-  appId: "1:519359225705:web:388d485eb324427b1c67f8"
+  apiKey: "AIzaSyAbyiT01b_KFXhHuAY00aWybmYVEhuHvsY",
+  authDomain: "msa-web-8517b.firebaseapp.com",
+  projectId: "msa-web-8517b",
+  storageBucket: "msa-web-8517b.appspot.com", // Si no tienes este, usa el default
+  messagingSenderId: "607379403409",
+  appId: "1:607379403409:web:tu-app-id" // Si no tienes este, coméntalo
 };
 
 let tallaSeleccionada = null;
-let authMode = 'login'; // 'login' or 'register'
+let authMode = 'login';
 
 // Inicializar Firebase
 function initFirebase() {
   try {
-    // Inicializar Firebase
     firebase.initializeApp(firebaseConfig);
     console.log('✅ Firebase inicializado');
     
-    // Escuchar cambios de autenticación
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
-        // Usuario logueado
         console.log('👤 Usuario autenticado:', user.email);
         updateAuthUI(true, user.email);
       } else {
-        // Usuario no logueado
         console.log('🔐 Usuario no autenticado');
         updateAuthUI(false);
       }
@@ -63,10 +59,8 @@ function showAuthModal(mode) {
   document.getElementById('authSwitch').textContent = mode === 'login' ? 
     '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
   
-  // Limpiar campos
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
-  
   document.getElementById('authModal').style.display = 'flex';
 }
 
@@ -89,40 +83,16 @@ async function procesarAuth() {
 
   try {
     if (authMode === 'register') {
-      // REGISTRO con Firebase
       await firebase.auth().createUserWithEmailAndPassword(email, password);
       alert('✅ ¡Cuenta creada exitosamente!');
     } else {
-      // LOGIN con Firebase
       await firebase.auth().signInWithEmailAndPassword(email, password);
       alert('✅ Sesión iniciada correctamente');
     }
     cerrarAuthModal();
   } catch (error) {
     console.error('❌ Error auth:', error);
-    
-    // Mensajes de error amigables
-    let errorMessage = 'Error desconocido';
-    switch (error.code) {
-      case 'auth/email-already-in-use':
-        errorMessage = 'Este email ya está registrado';
-        break;
-      case 'auth/invalid-email':
-        errorMessage = 'Email inválido';
-        break;
-      case 'auth/weak-password':
-        errorMessage = 'La contraseña debe tener al menos 6 caracteres';
-        break;
-      case 'auth/user-not-found':
-        errorMessage = 'Usuario no encontrado';
-        break;
-      case 'auth/wrong-password':
-        errorMessage = 'Contraseña incorrecta';
-        break;
-      default:
-        errorMessage = error.message;
-    }
-    
+    let errorMessage = 'Error: ' + error.message;
     alert('❌ ' + errorMessage);
   }
 }
@@ -133,57 +103,6 @@ async function logout() {
     alert('👋 Sesión cerrada');
   } catch (error) {
     console.error('Error logout:', error);
-  }
-}
-
-// Sistema de respaldo local (por si Firebase falla)
-function setupLocalAuth() {
-  console.log('🔧 Usando autenticación local');
-  let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
-  let userEmail = localStorage.getItem('userEmail') || '';
-  
-  const loginBtn = document.querySelector(".btn-login");
-  const registerBtn = document.querySelector(".btn-register");
-  
-  if (!loginBtn || !registerBtn) return;
-  
-  if (loggedIn) {
-    loginBtn.textContent = `Cerrar (${userEmail})`;
-    loginBtn.onclick = () => {
-      localStorage.setItem('userLoggedIn', 'false');
-      setupLocalAuth();
-      alert('Sesión cerrada');
-    };
-    registerBtn.style.display = "none";
-  } else {
-    loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => showLocalAuth('login');
-    registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => showLocalAuth('register');
-    registerBtn.style.display = "inline-block";
-  }
-}
-
-function showLocalAuth(mode) {
-  const email = prompt('📧 Email:');
-  if (!email) return;
-
-  if (mode === 'login') {
-    const password = prompt('🔒 Contraseña:');
-    if (password) {
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      setupLocalAuth();
-      alert('✅ Sesión iniciada (modo local)');
-    }
-  } else {
-    const password = prompt('🔒 Crea una contraseña:');
-    if (password) {
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      setupLocalAuth();
-      alert('✅ Cuenta creada (modo local)');
-    }
   }
 }
 
@@ -204,19 +123,8 @@ async function agregarCarrito() {
     return;
   }
 
-  // Verificar autenticación (Firebase o local)
-  let isAuthenticated = false;
-  
-  if (firebase.auth) {
-    try {
-      const user = firebase.auth().currentUser;
-      isAuthenticated = !!user;
-    } catch (error) {
-      isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
-    }
-  } else {
-    isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
-  }
+  const user = firebase.auth().currentUser;
+  const isAuthenticated = !!user;
 
   if (!isAuthenticated) {
     alert("🔐 Debes iniciar sesión para agregar al carrito.");
@@ -251,15 +159,8 @@ style.textContent = `
     font-size: 16px;
     box-sizing: border-box;
   }
-  .auth-input:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-  }
 `;
 document.head.appendChild(style);
 
-// Inicializar cuando la página cargue
-window.onload = function() {
-  initFirebase();
-};
+// Inicializar
+window.onload = initFirebase;
