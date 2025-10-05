@@ -1,41 +1,37 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MSA Shop</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MSA Shop</title>
+<link rel="stylesheet" href="style.css">
+<script type="module" src="main.js" defer></script>
 </head>
 <body>
-  <header>
-    <h1>MSA Shop</h1>
-    <div class="auth-buttons">
-      <button id="btn-login" class="btn-login">Iniciar Sesión</button>
-      <button id="btn-logout" class="btn-logout" style="display:none;">Cerrar Sesión</button>
-    </div>
-  </header>
+<header>
+  <h1>MSA Shop</h1>
+  <div class="auth-buttons">
+    <button id="btn-login" class="btn-login">Iniciar Sesión</button>
+    <button id="btn-logout" class="btn-logout" style="display:none;">Cerrar Sesión</button>
+  </div>
+</header>
 
-  <main>
-    <section class="producto">
-      <img src="img/camisetaLisaNegra.png" alt="Camiseta Lisa Negra" class="producto-img">
-      <div class="producto-info">
-        <h2>Camiseta Lisa Negra</h2>
-        <p>$250 MXN</p>
-
-        <div class="tallas">
-          <button onclick="seleccionarTalla('S')">S</button>
-          <button onclick="seleccionarTalla('M')">M</button>
-          <button onclick="seleccionarTalla('L')">L</button>
-        </div>
-
-        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
+<main>
+  <section class="producto">
+    <img src="img/camisetaLisaNegra.png" alt="Camiseta" class="producto-img">
+    <div class="producto-info">
+      <h2>Camiseta Lisa Negra</h2>
+      <p>$250 MXN</p>
+      <div class="tallas">
+        <button onclick="seleccionarTalla('S')">S</button>
+        <button onclick="seleccionarTalla('M')">M</button>
+        <button onclick="seleccionarTalla('L')">L</button>
       </div>
-    </section>
-  </main>
+      <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
+    </div>
+  </section>
+</main>
 
-  <!-- Panda decorativo -->
-  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
-
-  <script type="module" src="main.js"></script>
+<img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 </body>
 </html>
