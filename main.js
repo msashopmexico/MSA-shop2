@@ -71,7 +71,11 @@ function updateAuthUI(isLoggedIn, userEmail = '') {
 
 function showAuthModal(mode) {
   authMode = mode;
+  
+  // Actualizar título y texto del botón
   document.getElementById('authTitle').textContent = 
+    mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
+  document.getElementById('authButtonText').textContent = 
     mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
   document.getElementById('authSwitch').textContent = mode === 'login' ? 
     '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
@@ -83,9 +87,15 @@ function showAuthModal(mode) {
   // Limpiar campos
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
-  document.getElementById('authNombre').value = '';
-  document.getElementById('authDireccion').value = '';
-  document.getElementById('authFechaNacimiento').value = '';
+  
+  if (mode === 'register') {
+    document.getElementById('authNombre').value = '';
+    document.getElementById('authEmailRegistro').value = '';
+    document.getElementById('authTelefono').value = '';
+    document.getElementById('authDireccion').value = '';
+    document.getElementById('authFechaNacimiento').value = '';
+    document.getElementById('authPasswordRegistro').value = '';
+  }
   
   document.getElementById('authModal').style.display = 'flex';
 }
@@ -112,30 +122,51 @@ function validarEdad(fechaNacimiento) {
   return edad >= 13;
 }
 
+// Validar teléfono mexicano
+function validarTelefono(telefono) {
+  // Formato mexicano: 10 dígitos, puede empezar con +52
+  const regex = /^(\+52\s?)?(\d{10})$/;
+  return regex.test(telefono.replace(/\s/g, ''));
+}
+
 async function procesarAuth() {
-  const email = document.getElementById('authEmail').value;
-  const password = document.getElementById('authPassword').value;
-
-  if (!email || !password) {
-    alert('❌ Por favor completa todos los campos');
-    return;
-  }
-
   try {
     if (authMode === 'register') {
       // VALIDACIONES PARA REGISTRO
       const nombre = document.getElementById('authNombre').value;
+      const email = document.getElementById('authEmailRegistro').value;
+      const telefono = document.getElementById('authTelefono').value;
       const direccion = document.getElementById('authDireccion').value;
       const fechaNacimiento = document.getElementById('authFechaNacimiento').value;
+      const password = document.getElementById('authPasswordRegistro').value;
 
-      if (!nombre || !direccion || !fechaNacimiento) {
-        alert('❌ Por favor completa todos los campos del registro');
+      // Validar campos vacíos
+      if (!nombre || !email || !telefono || !direccion || !fechaNacimiento || !password) {
+        alert('❌ Por favor completa todos los campos');
+        return;
+      }
+
+      // Validar email
+      if (!email.includes('@')) {
+        alert('❌ Por favor ingresa un email válido');
+        return;
+      }
+
+      // Validar teléfono
+      if (!validarTelefono(telefono)) {
+        alert('❌ Por favor ingresa un número de teléfono válido (10 dígitos)');
         return;
       }
 
       // Validar edad mínima
       if (!validarEdad(fechaNacimiento)) {
         alert('❌ Debes tener al menos 13 años para registrarte');
+        return;
+      }
+
+      // Validar contraseña
+      if (password.length < 6) {
+        alert('❌ La contraseña debe tener al menos 6 caracteres');
         return;
       }
 
@@ -146,6 +177,7 @@ async function procesarAuth() {
       // Guardar datos adicionales del usuario
       const userData = {
         nombre: nombre,
+        telefono: telefono,
         direccion: direccion,
         fechaNacimiento: fechaNacimiento,
         email: email,
@@ -154,14 +186,23 @@ async function procesarAuth() {
       
       guardarDatosUsuario(user.uid, userData);
       alert('✅ ¡Cuenta creada exitosamente!');
+      cerrarAuthModal();
 
     } else {
       // LOGIN
+      const email = document.getElementById('authEmail').value;
+      const password = document.getElementById('authPassword').value;
+
+      if (!email || !password) {
+        alert('❌ Por favor completa todos los campos');
+        return;
+      }
+
       await firebase.auth().signInWithEmailAndPassword(email, password);
       alert('✅ Sesión iniciada correctamente');
+      cerrarAuthModal();
     }
     
-    cerrarAuthModal();
   } catch (error) {
     console.error('❌ Error auth:', error);
     let errorMessage = 'Error: ' + error.message;
@@ -182,6 +223,9 @@ async function procesarAuth() {
         break;
       case 'auth/wrong-password':
         errorMessage = 'Contraseña incorrecta';
+        break;
+      case 'auth/network-request-failed':
+        errorMessage = 'Error de conexión. Verifica tu internet';
         break;
     }
     
@@ -239,101 +283,6 @@ function irUpload() {
   }
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
-
-// Sistema de respaldo local
-function setupLocalAuth() {
-  console.log('🔧 Usando autenticación local');
-  let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
-  let userEmail = localStorage.getItem('userEmail') || '';
-  
-  const loginBtn = document.querySelector(".btn-login");
-  const registerBtn = document.querySelector(".btn-register");
-  
-  if (!loginBtn || !registerBtn) return;
-  
-  if (loggedIn) {
-    loginBtn.textContent = `Cerrar (${userEmail})`;
-    loginBtn.onclick = () => {
-      localStorage.setItem('userLoggedIn', 'false');
-      setupLocalAuth();
-      alert('Sesión cerrada');
-    };
-    registerBtn.style.display = "none";
-  } else {
-    loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => showLocalAuth('login');
-    registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => showLocalAuth('register');
-    registerBtn.style.display = "inline-block";
-  }
-}
-
-function showLocalAuth(mode) {
-  if (mode === 'login') {
-    const email = prompt('📧 Email:');
-    const password = prompt('🔒 Contraseña:');
-    if (email && password) {
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      setupLocalAuth();
-      alert('✅ Sesión iniciada (modo local)');
-    }
-  } else {
-    // Registro local con validaciones
-    const nombre = prompt('👤 Nombre completo:');
-    if (!nombre) return;
-    
-    const email = prompt('📧 Email:');
-    if (!email) return;
-    
-    const direccion = prompt('🏠 Dirección completa:');
-    if (!direccion) return;
-    
-    const fechaNacimiento = prompt('🎂 Fecha de nacimiento (YYYY-MM-DD):');
-    if (!fechaNacimiento) return;
-    
-    // Validar edad localmente
-    if (!validarEdad(fechaNacimiento)) {
-      alert('❌ Debes tener al menos 13 años para registrarte');
-      return;
-    }
-    
-    const password = prompt('🔒 Contraseña:');
-    if (password) {
-      localStorage.setItem('userLoggedIn', 'true');
-      localStorage.setItem('userEmail', email);
-      localStorage.setItem('userNombre', nombre);
-      localStorage.setItem('userDireccion', direccion);
-      localStorage.setItem('userFechaNacimiento', fechaNacimiento);
-      setupLocalAuth();
-      alert('✅ Cuenta creada (modo local)');
-    }
-  }
-}
-
-// CSS para inputs auth
-const style = document.createElement('style');
-style.textContent = `
-  .auth-input {
-    width: 100%; 
-    padding: 12px; 
-    margin: 10px 0; 
-    border-radius: 8px; 
-    border: 1px solid #ddd;
-    font-size: 16px;
-    box-sizing: border-box;
-    font-family: inherit;
-  }
-  .auth-input:focus {
-    border-color: #3498db;
-    outline: none;
-    box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
-  }
-  #registerFields {
-    transition: all 0.3s ease;
-  }
-`;
-document.head.appendChild(style);
 
 // Inicializar
 window.onload = initFirebase;

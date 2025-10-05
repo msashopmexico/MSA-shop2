@@ -5,6 +5,39 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MSA Shop</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-input {
+      width: 100%; 
+      padding: 12px; 
+      margin: 10px 0; 
+      border-radius: 8px; 
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
+      font-family: inherit;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+    }
+    .auth-input:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    }
+    .auth-field-group {
+      margin-bottom: 15px;
+    }
+    .auth-field-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #fff;
+      font-weight: bold;
+    }
+    .auth-note {
+      font-size: 12px;
+      color: #bbb;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -50,20 +83,44 @@
       
       <!-- Campos para Login -->
       <div id="loginFields">
-        <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input">
-        <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input">
+        <div class="auth-field-group">
+          <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input" required>
+        </div>
       </div>
       
       <!-- Campos adicionales para Registro -->
       <div id="registerFields" style="display: none;">
-        <input type="text" id="authNombre" placeholder="👤 Nombre completo" class="auth-input">
-        <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input">
-        <input type="date" id="authFechaNacimiento" class="auth-input">
-        <small style="color: #666; display: block; margin-bottom: 10px;">Debes tener al menos 13 años</small>
+        <div class="auth-field-group">
+          <input type="text" id="authNombre" placeholder="👤 Nombre completo" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="email" id="authEmailRegistro" placeholder="📧 Email" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="tel" id="authTelefono" placeholder="📞 Número de teléfono" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <label for="authFechaNacimiento">🎂 Fecha de nacimiento</label>
+          <input type="date" id="authFechaNacimiento" class="auth-input" required>
+          <div class="auth-note">Debes tener al menos 13 años</div>
+        </div>
+        <div class="auth-field-group">
+          <input type="password" id="authPasswordRegistro" placeholder="🔒 Contraseña" class="auth-input" required>
+        </div>
       </div>
       
-      <button class="comprar-btn" onclick="procesarAuth()">Continuar</button>
-      <p id="authSwitch" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+      <button class="comprar-btn" onclick="procesarAuth()" style="width: 100%; margin-top: 15px;">
+        <span id="authButtonText">Continuar</span>
+      </button>
+      <p id="authSwitch" onclick="toggleAuthMode()" style="text-align: center; margin-top: 15px; color: #3498db; cursor: pointer; text-decoration: underline;">
+        ¿No tienes cuenta? Regístrate aquí
+      </p>
     </div>
   </div>
 
