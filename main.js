@@ -1,16 +1,29 @@
 let auth0Client = null;
 let tallaSeleccionada = null;
+let auth0RetryCount = 0;
+const MAX_RETRIES = 10;
 
 async function initAuth() {
-  // VERIFICAR que auth0 está disponible antes de usarlo
+  // Verificar si auth0 está disponible
   if (typeof auth0 === 'undefined') {
-    console.error('Auth0 SDK no cargado. Reintentando...');
-    setTimeout(initAuth, 100); // Reintentar después de 100ms
+    auth0RetryCount++;
+    
+    if (auth0RetryCount >= MAX_RETRIES) {
+      console.error('Auth0 SDK no se pudo cargar después de ' + MAX_RETRIES + ' intentos');
+      showAuth0Error();
+      return;
+    }
+    
+    console.log('Auth0 SDK no cargado. Reintentando... (' + auth0RetryCount + '/' + MAX_RETRIES + ')');
+    setTimeout(initAuth, 500); // Aumentar el tiempo de espera
     return;
   }
 
   try {
-    // Crea el cliente Auth0 usando el objeto global "auth0"
+    // Resetear contador cuando se carga correctamente
+    auth0RetryCount = 0;
+    
+    // Crea el cliente Auth0
     auth0Client = await auth0.createAuth0Client({
       domain: "dev-r83h8xsmacihkvil.us.auth0.com",
       client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
@@ -26,14 +39,26 @@ async function initAuth() {
 
     const logged = await auth0Client.isAuthenticated();
     updateAuthButtons(logged);
+    
   } catch (error) {
     console.error('Error inicializando Auth0:', error);
+    showAuth0Error();
+  }
+}
+
+function showAuth0Error() {
+  // Mostrar mensaje de error al usuario
+  const authButtons = document.querySelector('.auth-buttons');
+  if (authButtons) {
+    authButtons.innerHTML = '<span style="color: red;">Error de autenticación</span>';
   }
 }
 
 function updateAuthButtons(logged) {
   const loginBtn = document.querySelector(".btn-login");
   const registerBtn = document.querySelector(".btn-register");
+
+  if (!loginBtn || !registerBtn) return;
 
   if (logged) {
     loginBtn.textContent = "Cerrar sesión";
@@ -51,31 +76,48 @@ function updateAuthButtons(logged) {
 // Funciones del carrito
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
-  document.getElementById("tallaSeleccionada").textContent = talla;
+  const tallaElement = document.getElementById("tallaSeleccionada");
+  if (tallaElement) {
+    tallaElement.textContent = talla;
+  }
 }
 
 async function agregarCarrito() {
-  // VERIFICAR que auth0Client existe antes de usarlo
-  if (!auth0Client) {
-    alert("Sistema de autenticación no disponible. Por favor recarga la página.");
+  if (!tallaSeleccionada) {
+    alert("Selecciona una talla primero.");
     return;
   }
 
-  if (!tallaSeleccionada) return alert("Selecciona una talla primero.");
+  if (!auth0Client) {
+    alert("Sistema de autenticación no disponible. Por favor inicia sesión manualmente.");
+    // Redirigir a login manualmente
+    window.location.href = `https://dev-r83h8xsmacihkvil.us.auth0.com/authorize?client_id=PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf&redirect_uri=${encodeURIComponent(window.location.origin)}&response_type=code`;
+    return;
+  }
 
   try {
     const logged = await auth0Client.isAuthenticated();
-    if (!logged) return alert("Debes iniciar sesión para agregar al carrito.");
+    if (!logged) {
+      alert("Debes iniciar sesión para agregar al carrito.");
+      await auth0Client.loginWithRedirect();
+      return;
+    }
 
-    document.getElementById("miModal").style.display = "flex";
+    const modal = document.getElementById("miModal");
+    if (modal) {
+      modal.style.display = "flex";
+    }
   } catch (error) {
     console.error('Error verificando autenticación:', error);
-    alert("Error al verificar autenticación");
+    alert("Error al verificar autenticación. Por favor recarga la página.");
   }
 }
 
 function cerrarModal() {
-  document.getElementById("miModal").style.display = "none";
+  const modal = document.getElementById("miModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
 }
 
 function irUpload() {
@@ -84,3 +126,11 @@ function irUpload() {
 
 // Inicializar cuando la página cargue
 window.onload = initAuth;
+
+// También intentar inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  // Si window.onload no se disparó, intentar initAuth
+  if (!auth0Client && typeof auth0 !== 'undefined') {
+    initAuth();
+  }
+});
