@@ -3,190 +3,142 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sube tu diseño - MSA Shop</title>
+  <title>MSA Shop</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .auth-input {
+      width: 100%; 
+      padding: 12px; 
+      margin: 10px 0; 
+      border-radius: 8px; 
+      border: 1px solid #ddd;
+      font-size: 16px;
+      box-sizing: border-box;
+      font-family: inherit;
+      background: rgba(255,255,255,0.9);
+      color: #333;
+    }
+    .auth-input:focus {
+      border-color: #3498db;
+      outline: none;
+      box-shadow: 0 0 5px rgba(52, 152, 219, 0.3);
+    }
+    .auth-field-group {
+      margin-bottom: 15px;
+    }
+    .auth-field-group label {
+      display: block;
+      margin-bottom: 5px;
+      color: #fff;
+      font-weight: bold;
+    }
+    .auth-note {
+      font-size: 12px;
+      color: #bbb;
+      margin-top: 5px;
+    }
+  </style>
 </head>
 <body>
   <header>
-    <h1>Sube tu diseño</h1>
-    <div style="position: absolute; top: 20px; right: 30px;">
-      <button onclick="volverAlInicio()" style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">
-        ← Volver al Inicio
-      </button>
+    <h1>MSA Shop</h1>
+    <div class="auth-buttons">
+      <button class="btn-login">Iniciar sesión</button>
+      <button class="btn-register">Registrarse</button>
+      <button class="btn-carrito">🛒 Carrito</button>
     </div>
   </header>
 
   <main>
-    <div class="producto">
+    <section class="producto">
+      <img src="img/camisetaLisaNegra.png" alt="Camiseta Lisa Negra" class="producto-img">
       <div class="producto-info">
-        <h2>Sube tu diseño personalizado</h2>
-        
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
-          <p><strong>Producto:</strong> Camisa Personalizada</p>
-          <p><strong>Talla:</strong> <span id="talla-info">?</span></p>
-          <p><strong>Precio:</strong> $250 MXN</p>
+        <h2>Camiseta Lisa Negra</h2>
+        <p>$250 MXN</p>
+        <div class="tallas">
+          <button onclick="seleccionarTalla('S')">S</button>
+          <button onclick="seleccionarTalla('M')">M</button>
+          <button onclick="seleccionarTalla('L')">L</button>
         </div>
-
-        <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 2px dashed #3498db; background: rgba(255,255,255,0.1); color: white;">
-        
-        <div id="fileInfo" style="color: #f39c12; margin: 10px 0;"></div>
-        
-        <div id="previewContainer" style="display: none; text-align: center;">
-          <img id="previewImg" src="" alt="Vista previa" style="max-width: 300px; border-radius: 10px; margin: 10px 0;">
-        </div>
-        
-        <button id="enviarBtn" class="comprar-btn" style="margin-top: 20px; width: 100%;">
-          Enviar diseño y confirmar pedido
-        </button>
-
-        <div id="successMessage" style="background: rgba(46, 204, 113, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #2ecc71; display: none;">
-          ✅ ¡Pedido confirmado! Redirigiendo...
-        </div>
+        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
       </div>
-    </div>
+    </section>
   </main>
 
+  <!-- Modal de Confirmación -->
+  <div id="miModal" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal()">&times;</span>
+      <h2>Confirma tu compra</h2>
+      <p>Seleccionaste la camiseta en talla: <span id="tallaSeleccionada">Ninguna</span></p>
+      <button class="comprar-btn" onclick="irUpload()">Sube tu diseño</button>
+    </div>
+  </div>
+
+  <!-- Modal Auth -->
+  <div id="authModal" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarAuthModal()">&times;</span>
+      <h2 id="authTitle">Iniciar Sesión</h2>
+      
+      <!-- Campos para Login -->
+      <div id="loginFields">
+        <div class="auth-field-group">
+          <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input" required>
+        </div>
+      </div>
+      
+      <!-- Campos adicionales para Registro -->
+      <div id="registerFields" style="display: none;">
+        <div class="auth-field-group">
+          <input type="text" id="authNombre" placeholder="👤 Nombre completo" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="email" id="authEmailRegistro" placeholder="📧 Email" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="tel" id="authTelefono" placeholder="📞 Número de teléfono" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input" required>
+        </div>
+        <div class="auth-field-group">
+          <label for="authFechaNacimiento">🎂 Fecha de nacimiento</label>
+          <input type="date" id="authFechaNacimiento" class="auth-input" required>
+          <div class="auth-note">Debes tener al menos 13 años</div>
+        </div>
+        <div class="auth-field-group">
+          <input type="password" id="authPasswordRegistro" placeholder="🔒 Contraseña" class="auth-input" required>
+        </div>
+      </div>
+      
+      <button class="comprar-btn" onclick="procesarAuth()" style="width: 100%; margin-top: 15px;">
+        <span id="authButtonText">Continuar</span>
+      </button>
+      <p id="authSwitch" onclick="toggleAuthMode()" style="text-align: center; margin-top: 15px; color: #3498db; cursor: pointer; text-decoration: underline;">
+        ¿No tienes cuenta? Regístrate aquí
+      </p>
+    </div>
+  </div>
+
   <!-- Panda decorativo -->
-  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()" title="¡Haz clic para volver al inicio! 🏠">
+  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-  <!-- EmailJS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
+  <script src="main.js"></script>
+  <!-- Panda decorativo -->
+<img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()">
 
-  <script>
-    // Función para volver al inicio
-    function volverAlInicio() {
-      window.location.href = 'index.html';
-    }
-
-    // Elementos DOM
-    const urlParams = new URLSearchParams(window.location.search);
-    const talla = urlParams.get('talla') || 'No especificada';
-
-    const fileInput = document.getElementById('fileInput');
-    const previewImg = document.getElementById('previewImg');
-    const previewContainer = document.getElementById('previewContainer');
-    const enviarBtn = document.getElementById('enviarBtn');
-    const fileInfo = document.getElementById('fileInfo');
-    const successMessage = document.getElementById('successMessage');
-    const tallaInfo = document.getElementById('talla-info');
-
-    let archivoSeleccionado = null;
-
-    // Mostrar información del pedido
-    function mostrarInfoPedido() {
-      tallaInfo.textContent = talla;
-    }
-
-    // Configurar evento del file input
-    fileInput.addEventListener('change', function(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      // Verificar tamaño máximo
-      const maxSize = 5 * 1024 * 1024;
-      if (file.size > maxSize) {
-        alert('❌ La imagen es demasiado grande. Máximo 5MB permitido.');
-        fileInput.value = '';
-        fileInfo.textContent = '';
-        return;
-      }
-
-      if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('❌ Solo se permiten archivos PNG, JPG o JPEG');
-        fileInput.value = '';
-        fileInfo.textContent = '';
-        return;
-      }
-
-      archivoSeleccionado = file;
-      
-      // Mostrar información del archivo
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      fileInfo.textContent = `Archivo: ${file.name} (${sizeMB} MB)`;
-      
-      // Mostrar vista previa
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        previewImg.src = e.target.result;
-        previewContainer.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
-    });
-
-    // Función para enviar el correo
-    enviarBtn.addEventListener('click', async function() {
-      if (!archivoSeleccionado) {
-        alert('❌ Por favor selecciona un archivo primero');
-        return;
-      }
-
-      // Obtener datos del usuario
-      const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-
-      // Deshabilitar botón y mostrar loading
-      enviarBtn.textContent = 'Enviando...';
-      enviarBtn.disabled = true;
-
-      try {
-        // Convertir imagen a Base64
-        const reader = new FileReader();
-        reader.onload = async function() {
-          const imagenBase64 = reader.result;
-
-          // Preparar datos para el email
-          const templateParams = {
-            nombre: userData.nombre || "Cliente MSA",
-            email: userData.email || "cliente@msashop.com",
-            productos: `Camisa Personalizada - Talla: ${talla}`,
-            total: "$250 MXN",
-            fecha: new Date().toLocaleDateString('es-MX'),
-            direccion: userData.direccion || "No especificada",
-            ciudad: "Guadalajara",
-            codigo_postal: "45000",
-            telefono: userData.telefono || "No proporcionado",
-            imagen_url: imagenBase64
-          };
-
-          // Inicializar y enviar con EmailJS
-          await emailjs.init("PhV4Hp36EPOLiGe6t");
-          await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
-
-          // Mostrar mensaje de éxito
-          successMessage.style.display = 'block';
-          enviarBtn.style.display = 'none';
-          
-          alert('✅ ¡Pedido confirmado! Se ha enviado la información por email.');
-          
-          // Redirigir después de 2 segundos
-          setTimeout(() => {
-            window.location.href = 'index.html';
-          }, 2000);
-        };
-        reader.readAsDataURL(archivoSeleccionado);
-
-      } catch (error) {
-        console.error('❌ Error al enviar:', error);
-        
-        let mensajeError = 'Error al enviar el pedido: ';
-        
-        if (error.status === 413) {
-          mensajeError += 'La imagen es demasiado grande. Intenta con un archivo más pequeño.';
-        } else {
-          mensajeError += error.text || error.message || 'Error desconocido';
-        }
-        
-        alert('❌ ' + mensajeError);
-        
-        // Restaurar botón
-        enviarBtn.textContent = 'Enviar diseño y confirmar pedido';
-        enviarBtn.disabled = false;
-      }
-    });
-
-    // Inicializar la página cuando cargue
-    document.addEventListener('DOMContentLoaded', function() {
-      mostrarInfoPedido();
-    });
-  </script>
+<script>
+// Función para volver al inicio
+function volverAlInicio() {
+    window.location.href = 'index.html';
+}
+</script>
 </body>
 </html>
