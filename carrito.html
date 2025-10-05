@@ -1,25 +1,24 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carrito - MSA Shop</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Carrito - MSA Shop</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Tu Carrito</h1>
-    <button id="btn-logout">Cerrar sesión</button>
-  </header>
+<header>
+  <h1>MSA Shop México</h1>
+</header>
 
-  <main>
-    <h2>Productos en tu carrito</h2>
-    <ul id="lista-carrito">
-      <li>Camiseta Negra - $300</li>
-    </ul>
-  </main>
+<div class="container">
+  <h2>Carrito de Compras</h2>
+  <ul id="lista-carrito"></ul>
+  <p id="total"></p>
+  <button id="btn-vaciar">Vaciar Carrito</button>
+  <button id="btn-finalizar">Finalizar Compra</button>
+</div>
 
-  <script src="main.js"></script>
+<script type="module" src="main.js"></script>
 </body>
 </html>

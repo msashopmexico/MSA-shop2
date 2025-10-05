@@ -1,42 +1,61 @@
 body {
-  font-family: Arial, sans-serif;
   margin: 0;
-  padding: 0;
-  text-align: center;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1f1c2c, #928dab);
+  color: #fff;
 }
 
 header {
-  background: black;
-  color: white;
-  padding: 15px;
-}
-
-button {
-  margin: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
-  border: none;
-  background: #222;
-  color: white;
-  border-radius: 5px;
-}
-
-button:hover {
-  background: #444;
-}
-
-.modal {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.modal-content {
-  background: white;
+  background: linear-gradient(90deg, #222, #444);
   padding: 20px;
-  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
+
+header h1 { margin:0; font-size:2rem; letter-spacing:2px; }
+
+.auth-buttons { position:absolute; top:20px; right:30px; }
+
+.auth-buttons button {
+  margin-left: 10px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 25px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+}
+
+.btn-login { background: #3498db; color:white; }
+.btn-login:hover { background: #2980b9; transform:scale(1.05); }
+
+.btn-register { background: #e74c3c; color:white; }
+.btn-register:hover { background: #c0392b; transform:scale(1.05); }
+
+main { display:flex; justify-content:center; align-items:center; padding:50px 20px; flex-direction:column; }
+
+.producto { background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border-radius: 20px;
+  padding: 30px; display: flex; gap: 30px; box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  max-width: 800px; width: 100%; flex-wrap:wrap; justify-content:center; }
+
+.producto-img { width: 200px; border-radius: 15px; box-shadow:0 5px 15px rgba(0,0,0,0.5); transition: transform 0.3s ease; }
+.producto-img:hover { transform: scale(1.05); }
+
+.producto-info h2 { margin:0; font-size:1.5rem; }
+.producto-info p { font-size:1.2rem; margin:10px 0; font-weight:bold; color:#f1c40f; }
+
+.tallas button { margin:5px; padding:10px 18px; border:none; border-radius:10px; background:#2ecc71; color:white; font-weight:bold; cursor:pointer; transition:all 0.3s ease; }
+.tallas button:hover { background:#27ae60; transform: translateY(-2px); }
+
+.comprar-btn { margin-top:15px; padding:12px 20px; border:none; border-radius:15px; background:#f39c12; color:white; font-size:1rem; font-weight:bold; cursor:pointer; transition:all 0.3s ease; }
+.comprar-btn:hover { background:#d35400; transform: scale(1.05); }
+
+.modal { display:none; position:fixed; z-index:10; left:0; top:0; width:100%; height:100%; background:rgba(0,0,0,0.7); justify-content:center; align-items:center; }
+.modal-contenido { background:#2c3e50; padding:30px; border-radius:20px; text-align:center; color:white; max-width:400px; box-shadow:0 6px 20px rgba(0,0,0,0.5); }
+.cerrar { float:right; font-size:28px; cursor:pointer; color:#ecf0f1; }
+.cerrar:hover { color:#e74c3c; }
+
+.panda-decoracion { position: fixed; bottom: 20px; right: 20px; width: 120px; height: 120px; opacity:0.9; border-radius:50%; box-shadow:0 0 20px rgba(255,255,255,0.7); background:white; padding:5px; object-fit:cover; transition: transform 0.3s ease; }
+.panda-decoracion:hover { transform:scale(1.1) rotate(5deg); }
