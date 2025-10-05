@@ -9,7 +9,7 @@ window.onload = async () => {
     domain: "dev-r83h8xsmacihkvil.us.auth0.com",
     client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
     cacheLocation: "localstorage",
-    redirect_uri: window.location.origin
+    redirect_uri: "https://msa-shop.netlify.app/"
   });
 
   // Manejar redirección de login
