@@ -46,7 +46,6 @@
         <div id="errorMessage" style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #e74c3c; display: none;">
         </div>
 
-        <!-- Mensaje de usuario no autenticado -->
         <div id="noAuthMessage" style="background: rgba(243, 156, 18, 0.2); padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; display: none;">
           <h3 style="color: #f39c12; margin-bottom: 15px;">⚠️ Sesión no encontrada</h3>
           <p style="margin-bottom: 15px;">Para subir un diseño necesitas iniciar sesión primero.</p>
@@ -58,60 +57,88 @@
     </div>
   </main>
 
-  <!-- Panda decorativo -->
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()" title="¡Haz clic para volver al inicio! 🏠">
 
-  <!-- EmailJS SDK -->
   <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth-compat.js"></script>
 
   <script>
-    // ✅ CONFIGURACIÓN CLOUDINARY CORRECTA
     const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze';
     const CLOUDINARY_UPLOAD_PRESET = 'image_design';
 
-    // Función para volver al inicio
+    const firebaseConfig = {
+      apiKey: "AIzaSyAbyiT01b_KFXhHuAY00aWybmYVEhuHvsY",
+      authDomain: "msa-web-8517b.firebaseapp.com",
+      projectId: "msa-web-8517b",
+      storageBucket: "msa-web-8517b.firebasestorage.app",
+      messagingSenderId: "607379403409",
+      appId: "1:607379403409:web:tu-app-id-aqui"
+    };
+
+    let firebaseApp;
+    let auth;
+    try {
+      firebaseApp = firebase.initializeApp(firebaseConfig);
+      auth = firebase.auth();
+      console.log('✅ Firebase inicializado');
+    } catch (error) {
+      console.log('ℹ️ Firebase ya inicializado o no disponible');
+    }
+
     function volverAlInicio() {
       window.location.href = 'index.html';
     }
 
-    // FUNCIÓN MEJORADA para obtener datos del usuario - compatible con móvil
     function obtenerDatosUsuario() {
       try {
-        console.log('🔍 Buscando datos de usuario en localStorage...');
-        
-        // 1. Buscar en userData (formato más común)
+        console.log('🔍 Buscando datos de usuario...');
+
+        if (auth) {
+          const currentUser = auth.currentUser;
+          if (currentUser) {
+            console.log('✅ Usuario encontrado en Firebase Auth:', currentUser);
+            return {
+              nombre: currentUser.displayName || 'Usuario',
+              email: currentUser.email || '',
+              telefono: currentUser.phoneNumber || '',
+              uid: currentUser.uid
+            };
+          }
+        }
+
         let userData = localStorage.getItem('userData');
         if (userData) {
           console.log('✅ Datos encontrados en userData');
           return JSON.parse(userData);
         }
 
-        // 2. Buscar en firebase:authUser (formato Firebase)
-        userData = localStorage.getItem('firebase:authUser:AIzaSyBp_1g4oXv7R8LqI5k9p1qV6X2Y7Z8x9X0:msa-shop');
-        if (userData) {
-          console.log('✅ Datos encontrados en Firebase auth');
-          const parsed = JSON.parse(userData);
-          // Extraer datos del formato Firebase
-          if (parsed && parsed.uid) {
-            return {
-              nombre: parsed.displayName || 'Usuario',
-              email: parsed.email || '',
-              telefono: parsed.phoneNumber || '',
-              uid: parsed.uid
-            };
-          }
-        }
-
-        // 3. Buscar en todas las claves de localStorage que contengan userData
         const keys = Object.keys(localStorage);
         for (let key of keys) {
-          if (key.includes('userData') || key.includes('user')) {
+          if (key.includes('user') || key.includes('auth') || key.includes('firebase')) {
             try {
               const data = localStorage.getItem(key);
-              const parsed = JSON.parse(data);
-              if (parsed && (parsed.email || parsed.nombre)) {
-                console.log('✅ Datos encontrados en clave:', key);
-                return parsed;
+              try {
+                const parsed = JSON.parse(data);
+                if (parsed && (parsed.email || parsed.nombre || parsed.displayName)) {
+                  console.log('✅ Datos encontrados en clave:', key);
+                  return {
+                    nombre: parsed.displayName || parsed.nombre || 'Usuario',
+                    email: parsed.email || '',
+                    telefono: parsed.phoneNumber || parsed.telefono || '',
+                    uid: parsed.uid || ''
+                  };
+                }
+              } catch (e) {
+                if (data.includes('@') && data.includes('.')) {
+                  console.log('✅ Email encontrado en clave:', key);
+                  return {
+                    nombre: 'Usuario',
+                    email: data,
+                    telefono: '',
+                    uid: ''
+                  };
+                }
               }
             } catch (e) {
               continue;
@@ -119,14 +146,32 @@
           }
         }
 
-        // 4. Buscar en sessionStorage como fallback
         userData = sessionStorage.getItem('userData');
         if (userData) {
-          console.log('✅ Datos encontrados en sessionStorage');
-          return JSON.parse(userData);
+          try {
+            const parsed = JSON.parse(userData);
+            if (parsed && (parsed.email || parsed.nombre)) {
+              console.log('✅ Datos encontrados en sessionStorage');
+              return parsed;
+            }
+          } catch (e) {
+            console.log('ℹ️ Datos en sessionStorage no son JSON válido');
+          }
         }
 
-        console.warn('❌ No se encontraron datos de usuario en ningún almacenamiento');
+        const accessToken = localStorage.getItem('access_token') || 
+                           localStorage.getItem('firebase-access-token');
+        if (accessToken) {
+          console.log('✅ Token de acceso encontrado');
+          return {
+            nombre: 'Usuario Autenticado',
+            email: 'usuario@autenticado.com',
+            telefono: '',
+            uid: 'token-presente'
+          };
+        }
+
+        console.warn('❌ No se encontraron datos de usuario autenticado');
         return null;
 
       } catch (error) {
@@ -135,7 +180,6 @@
       }
     }
 
-    // Elementos DOM
     const urlParams = new URLSearchParams(window.location.search);
     const talla = urlParams.get('talla') || 'No especificada';
 
@@ -152,38 +196,31 @@
     let archivoSeleccionado = null;
     let userData = null;
 
-    // Mostrar información del pedido
     function mostrarInfoPedido() {
       tallaInfo.textContent = talla;
     }
 
-    // Cargar datos del usuario al iniciar - VERSIÓN MEJORADA
-    function cargarDatosUsuario() {
-      userData = obtenerDatosUsuario();
+    async function cargarDatosUsuario() {
+      userData = await obtenerDatosUsuario();
       
       if (userData) {
         console.log('✅ Usuario autenticado:', userData);
-        // Mostrar interfaz normal
         fileInput.style.display = 'block';
         enviarBtn.style.display = 'block';
         noAuthMessage.style.display = 'none';
       } else {
-        console.warn('⚠️ Usuario no autenticado');
-        // Ocultar interfaz de subida y mostrar mensaje
+        console.warn('⚠️ Usuario no autenticado - mostrando mensaje');
         fileInput.style.display = 'none';
         enviarBtn.style.display = 'none';
+        previewContainer.style.display = 'none';
         noAuthMessage.style.display = 'block';
-        
-        // No redirigir automáticamente, solo mostrar mensaje
       }
     }
 
-    // Configurar evento del file input
     fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      // Verificar tamaño máximo
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         alert('❌ La imagen es demasiado grande. Máximo 5MB permitido.');
@@ -201,11 +238,9 @@
 
       archivoSeleccionado = file;
       
-      // Mostrar información del archivo
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
       fileInfo.textContent = `Archivo: ${file.name} (${sizeMB} MB)`;
       
-      // Mostrar vista previa
       const reader = new FileReader();
       reader.onload = function(e) {
         previewImg.src = e.target.result;
@@ -214,7 +249,6 @@
       reader.readAsDataURL(file);
     });
 
-    // Función para subir imagen a Cloudinary
     async function subirACloudinary(archivo) {
       console.log('📤 Iniciando subida a Cloudinary...', {
         cloudName: CLOUDINARY_CLOUD_NAME,
@@ -259,7 +293,6 @@
       }
     }
 
-    // Función principal para enviar el pedido
     enviarBtn.addEventListener('click', async function() {
       if (!archivoSeleccionado) {
         alert('❌ Por favor selecciona un archivo primero');
@@ -272,16 +305,13 @@
         return;
       }
 
-      // Deshabilitar botón y mostrar loading
       enviarBtn.textContent = 'Subiendo imagen...';
       enviarBtn.disabled = true;
       errorMessage.style.display = 'none';
 
       try {
-        // 1. Subir imagen a Cloudinary
         const cloudinaryUrl = await subirACloudinary(archivoSeleccionado);
 
-        // 2. Enviar email con EmailJS
         enviarBtn.textContent = 'Enviando información...';
 
         const templateParams = {
@@ -318,14 +348,13 @@ ${cloudinaryUrl}`
         await emailjs.init("PhV4Hp36EPOLiGe6t");
         await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
 
-        // Éxito
         successMessage.style.display = 'block';
         enviarBtn.style.display = 'none';
         
         console.log('✅ Pedido completado exitosamente');
         
         setTimeout(() => {
-          window.location.href = 'index.html';
+          window.location.href = 'gracias.html';
         }, 2000);
 
       } catch (error) {
@@ -340,30 +369,13 @@ ${cloudinaryUrl}`
         errorMessage.textContent = mensajeError;
         errorMessage.style.display = 'block';
         
-        // Restaurar botón
         enviarBtn.textContent = 'Enviar diseño y confirmar pedido';
         enviarBtn.disabled = false;
       }
     });
 
-    // DEBUG: Mostrar todo el localStorage al cargar
-    function debugLocalStorage() {
-      console.log('🔍 DEBUG - Todo el localStorage:');
-      const keys = Object.keys(localStorage);
-      keys.forEach(key => {
-        try {
-          const value = localStorage.getItem(key);
-          console.log(`📝 ${key}:`, value);
-        } catch (e) {
-          console.log(`📝 ${key}: [No se puede leer]`);
-        }
-      });
-    }
-
-    // Inicializar la página
     document.addEventListener('DOMContentLoaded', function() {
       console.log('🚀 Inicializando página upload.html');
-      debugLocalStorage(); // Para debugging
       mostrarInfoPedido();
       cargarDatosUsuario();
     });
