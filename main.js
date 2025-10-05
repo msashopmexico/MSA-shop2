@@ -3,16 +3,18 @@ let tallaSeleccionada = null;
 
 async function initAuth() {
   try {
-    console.log('🔧 Inicializando Auth0...');
+    console.log('🚀 Iniciando Auth0...');
     
-    // Esperar a que Auth0 se cargue
+    // Verificar que Auth0 está cargado
     if (typeof auth0 === 'undefined') {
-      console.error('Auth0 no disponible');
-      setupFallbackAuth();
+      console.error('❌ Auth0 SDK no cargado');
+      showError('Auth0 no disponible. Recarga la página.');
       return;
     }
 
-    // Configurar Auth0 para Netlify
+    console.log('✅ Auth0 SDK detectado');
+
+    // Configuración CORRECTA para Netlify
     auth0Client = await auth0.createAuth0Client({
       domain: "dev-r83h8xsmacihkvil.us.auth0.com",
       client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
@@ -24,115 +26,122 @@ async function initAuth() {
 
     console.log('✅ Cliente Auth0 creado');
 
-    // MANEJO MEJORADO del callback después del login
-    if (window.location.search.includes('code=')) {
-      console.log('🔄 Detectado callback de Auth0, procesando...');
+    // Manejar el callback después del login
+    const query = window.location.search;
+    if (query.includes("code=") && query.includes("state=")) {
+      console.log('🔄 Procesando callback de login...');
       try {
-        const { appState } = await auth0Client.handleRedirectCallback();
-        console.log('✅ Login exitoso, redirigiendo...');
-        
-        // Limpiar URL
+        await auth0Client.handleRedirectCallback();
+        console.log('✅ Login exitoso, limpiando URL...');
+        // Limpiar la URL después del login
         window.history.replaceState({}, document.title, "/");
-        
-        // Redirigir a página principal
-        window.location.href = "https://msa-shop.netlify.app";
-        
       } catch (error) {
-        console.error('Error en callback:', error);
+        console.error('❌ Error en callback:', error);
       }
-      return;
     }
 
-    // Verificar si ya está autenticado
+    // Verificar estado de autenticación
     const isAuthenticated = await auth0Client.isAuthenticated();
-    console.log('👤 Usuario autenticado:', isAuthenticated);
+    console.log('🔐 Usuario autenticado:', isAuthenticated);
+    
     updateAuthButtons(isAuthenticated);
 
   } catch (error) {
-    console.error('❌ Error inicializando Auth0:', error);
-    setupFallbackAuth();
+    console.error('💥 Error crítico:', error);
+    showError('Error de autenticación. Usando modo seguro.');
+    setupFallbackMode();
   }
 }
 
-function setupFallbackAuth() {
-  console.log('🔧 Usando modo desarrollo');
-  let loggedIn = localStorage.getItem('dev_logged_in') === 'true';
-  
-  updateAuthButtons(loggedIn);
+function showError(message) {
+  console.error('❌', message);
+}
+
+function setupFallbackMode() {
+  console.log('🔧 Activando modo de respaldo...');
+  // Aquí podrías mostrar botones alternativos si quieres
 }
 
 function updateAuthButtons(isAuthenticated) {
   const loginBtn = document.querySelector(".btn-login");
   const registerBtn = document.querySelector(".btn-register");
 
-  if (!loginBtn || !registerBtn) return;
+  if (!loginBtn || !registerBtn) {
+    console.warn('⚠️ Botones no encontrados');
+    return;
+  }
 
   if (isAuthenticated) {
-    if (auth0Client) {
-      // Modo Auth0 real
-      loginBtn.textContent = "Cerrar sesión";
-      loginBtn.onclick = () => auth0Client.logout({
-        logoutParams: { 
-          returnTo: "https://msa-shop.netlify.app" 
-        }
-      });
-    } else {
-      // Modo desarrollo
-      loginBtn.textContent = "Cerrar sesión";
-      loginBtn.onclick = () => {
-        localStorage.setItem('dev_logged_in', 'false');
-        updateAuthButtons(false);
-        alert('Sesión cerrada');
-      };
-    }
+    // Usuario LOGUEADO
+    loginBtn.textContent = "Cerrar sesión";
+    loginBtn.onclick = () => logout();
     registerBtn.style.display = "none";
+    console.log('✅ UI: Usuario autenticado');
   } else {
-    if (auth0Client) {
-      // Modo Auth0 real
-      loginBtn.textContent = "Iniciar sesión";
-      loginBtn.onclick = () => login();
-      registerBtn.textContent = "Registrarse";
-      registerBtn.onclick = () => login({ 
-        authorizationParams: { screen_hint: "signup" } 
-      });
-    } else {
-      // Modo desarrollo
-      loginBtn.textContent = "Iniciar sesión";
-      loginBtn.onclick = () => {
-        localStorage.setItem('dev_logged_in', 'true');
-        updateAuthButtons(true);
-        alert('✅ Sesión iniciada (modo desarrollo)');
-      };
-      registerBtn.textContent = "Registrarse";
-      registerBtn.onclick = () => {
-        localStorage.setItem('dev_logged_in', 'true');
-        updateAuthButtons(true);
-        alert('✅ Registro exitoso (modo desarrollo)');
-      };
-    }
+    // Usuario NO logueado
+    loginBtn.textContent = "Iniciar sesión";
+    loginBtn.onclick = () => login();
+    registerBtn.textContent = "Registrarse";
+    registerBtn.onclick = () => register();
     registerBtn.style.display = "inline-block";
+    console.log('✅ UI: Usuario no autenticado');
   }
 }
 
-async function login(options = {}) {
+async function login() {
   if (!auth0Client) {
-    alert('Auth0 no disponible');
+    alert('⚠️ Sistema de autenticación no disponible');
     return;
   }
-  
+
   try {
+    console.log('🔐 Iniciando login...');
     await auth0Client.loginWithRedirect({
       authorizationParams: {
-        redirect_uri: "https://msa-shop.netlify.app",
-        ...options.authorizationParams
+        redirect_uri: "https://msa-shop.netlify.app"
       }
     });
   } catch (error) {
-    console.error('Error en login:', error);
+    console.error('❌ Error en login:', error);
+    alert('Error al iniciar sesión');
   }
 }
 
-// Funciones del carrito (sin cambios)
+async function register() {
+  if (!auth0Client) {
+    alert('⚠️ Sistema de autenticación no disponible');
+    return;
+  }
+
+  try {
+    console.log('📝 Iniciando registro...');
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        screen_hint: "signup",
+        redirect_uri: "https://msa-shop.netlify.app"
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en registro:', error);
+    alert('Error en el registro');
+  }
+}
+
+async function logout() {
+  if (!auth0Client) return;
+
+  try {
+    await auth0Client.logout({
+      logoutParams: {
+        returnTo: "https://msa-shop.netlify.app"
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en logout:', error);
+  }
+}
+
+// Funciones del carrito
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
   const tallaElement = document.getElementById("tallaSeleccionada");
@@ -152,33 +161,25 @@ async function agregarCarrito() {
     return;
   }
 
-  // Verificar autenticación
-  let isAuthenticated = false;
-  
-  if (auth0Client) {
-    try {
-      isAuthenticated = await auth0Client.isAuthenticated();
-    } catch (error) {
-      console.error('Error verificando auth:', error);
-    }
-  } else {
-    // Modo desarrollo
-    isAuthenticated = localStorage.getItem('dev_logged_in') === 'true';
-  }
-
-  if (!isAuthenticated) {
-    alert("🔐 Debes iniciar sesión para agregar al carrito.");
-    if (auth0Client) {
-      await login();
-    } else {
-      // En modo desarrollo, simular login
-      localStorage.setItem('dev_logged_in', 'true');
-      updateAuthButtons(true);
-    }
+  if (!auth0Client) {
+    alert("❌ Error de sistema. Recarga la página.");
     return;
   }
 
-  document.getElementById("miModal").style.display = "flex";
+  try {
+    const isAuthenticated = await auth0Client.isAuthenticated();
+    
+    if (!isAuthenticated) {
+      alert("🔐 Debes iniciar sesión para agregar al carrito.");
+      await login();
+      return;
+    }
+
+    document.getElementById("miModal").style.display = "flex";
+  } catch (error) {
+    console.error('❌ Error en agregarCarrito:', error);
+    alert("Error al verificar autenticación");
+  }
 }
 
 function cerrarModal() {
@@ -190,9 +191,8 @@ function irUpload() {
     alert("Selecciona una talla primero");
     return;
   }
-  localStorage.setItem('tallaSeleccionada', tallaSeleccionada);
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
 
-// Inicializar
+// Inicializar cuando la página cargue
 window.onload = initAuth;
