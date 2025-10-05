@@ -1,214 +1,64 @@
-let auth0Client = null;
-let tallaSeleccionada = null;
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MSA Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>MSA Shop</h1>
+    <div class="auth-buttons">
+      <button class="btn-login">Iniciar sesión</button>
+      <button class="btn-register">Registrarse</button>
+      <button class="btn-carrito">🛒 Carrito</button>
+    </div>
+  </header>
 
-async function initAuth() {
-  try {
-    console.log('🚀 Iniciando Auth0...');
-    
-    if (typeof auth0 === 'undefined') {
-      console.error('❌ Auth0 SDK no cargado');
-      showFallbackAuth();
-      return;
-    }
+  <main>
+    <section class="producto">
+      <img src="img/camisetaLisaNegra.png" alt="Camiseta Lisa Negra" class="producto-img">
+      <div class="producto-info">
+        <h2>Camiseta Lisa Negra</h2>
+        <p>$250 MXN</p>
+        <div class="tallas">
+          <button onclick="seleccionarTalla('S')">S</button>
+          <button onclick="seleccionarTalla('M')">M</button>
+          <button onclick="seleccionarTalla('L')">L</button>
+        </div>
+        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
+      </div>
+    </section>
+  </main>
 
-    // Configuración ESPECÍFICA para Netlify
-    auth0Client = await auth0.createAuth0Client({
-      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
-      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
-      cacheLocation: "localstorage",
-      authorizationParams: {
-        redirect_uri: "https://msa-shop.netlify.app/"
-      }
-    });
+  <!-- Modal de Confirmación -->
+  <div id="miModal" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarModal()">&times;</span>
+      <h2>Confirma tu compra</h2>
+      <p>Seleccionaste la camiseta en talla: <span id="tallaSeleccionada">Ninguna</span></p>
+      <button class="comprar-btn" onclick="irUpload()">Sube tu diseño</button>
+    </div>
+  </div>
 
-    console.log('✅ Cliente Auth0 creado');
+  <!-- Modal Login/Registro -->
+  <div id="authModal" class="modal">
+    <div class="modal-contenido">
+      <span class="cerrar" onclick="cerrarAuthModal()">&times;</span>
+      <h2 id="authTitle">Iniciar Sesión</h2>
+      <input type="email" id="authEmail" placeholder="📧 Email" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd;">
+      <input type="password" id="authPassword" placeholder="🔒 Contraseña" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd;">
+      <button class="comprar-btn" onclick="procesarAuth()" style="width: 100%;">Continuar</button>
+      <p id="authSwitch" style="margin-top: 15px; cursor: pointer; color: #3498db;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+    </div>
+  </div>
 
-    // Manejar callback de login
-    if (window.location.search.includes("code=")) {
-      console.log('🔄 Detectado callback de Auth0');
-      try {
-        await auth0Client.handleRedirectCallback();
-        window.history.replaceState({}, document.title, "/");
-        console.log('✅ Callback procesado, recargando...');
-        window.location.href = "/"; // Recargar para actualizar estado
-        return;
-      } catch (error) {
-        console.error('❌ Error en callback:', error);
-      }
-    }
+  <!-- Panda decorativo -->
+  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-    // Verificar autenticación
-    const isAuthenticated = await auth0Client.isAuthenticated();
-    console.log('🔐 Estado autenticación:', isAuthenticated);
-    updateAuthButtons(isAuthenticated);
-
-  } catch (error) {
-    console.error('💥 Error inicializando Auth0:', error);
-    showFallbackAuth();
-  }
-}
-
-function showFallbackAuth() {
-  console.log('🔧 Usando autenticación local');
-  let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
-  
-  const loginBtn = document.querySelector(".btn-login");
-  const registerBtn = document.querySelector(".btn-register");
-  
-  if (!loginBtn || !registerBtn) return;
-  
-  if (loggedIn) {
-    loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => {
-      localStorage.setItem('userLoggedIn', 'false');
-      showFallbackAuth();
-      alert('Sesión cerrada');
-    };
-    registerBtn.style.display = "none";
-  } else {
-    loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => {
-      localStorage.setItem('userLoggedIn', 'true');
-      showFallbackAuth();
-      alert('✅ Sesión iniciada (modo local)');
-    };
-    registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => {
-      localStorage.setItem('userLoggedIn', 'true');
-      showFallbackAuth();
-      alert('✅ Cuenta creada (modo local)');
-    };
-    registerBtn.style.display = "inline-block";
-  }
-}
-
-function updateAuthButtons(isAuthenticated) {
-  const loginBtn = document.querySelector(".btn-login");
-  const registerBtn = document.querySelector(".btn-register");
-
-  if (!loginBtn || !registerBtn) return;
-
-  if (isAuthenticated) {
-    loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => logout();
-    registerBtn.style.display = "none";
-  } else {
-    loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => login();
-    registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => register();
-    registerBtn.style.display = "inline-block";
-  }
-}
-
-async function login() {
-  if (!auth0Client) {
-    alert('Sistema de autenticación no disponible');
-    return;
-  }
-
-  try {
-    console.log('🔐 Redirigiendo a Auth0 login...');
-    await auth0Client.loginWithRedirect({
-      authorizationParams: {
-        redirect_uri: "https://msa-shop.netlify.app/"
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error en login:', error);
-    alert('Error al iniciar sesión: ' + error.message);
-  }
-}
-
-async function register() {
-  if (!auth0Client) {
-    alert('Sistema de autenticación no disponible');
-    return;
-  }
-
-  try {
-    console.log('📝 Redirigiendo a Auth0 registro...');
-    await auth0Client.loginWithRedirect({
-      authorizationParams: {
-        screen_hint: "signup",
-        redirect_uri: "https://msa-shop.netlify.app/"
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error en registro:', error);
-    alert('Error en registro: ' + error.message);
-  }
-}
-
-async function logout() {
-  if (!auth0Client) return;
-
-  try {
-    await auth0Client.logout({
-      logoutParams: {
-        returnTo: "https://msa-shop.netlify.app/"
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error en logout:', error);
-  }
-}
-
-// Funciones del carrito
-function seleccionarTalla(talla) {
-  tallaSeleccionada = talla;
-  document.getElementById("tallaSeleccionada").textContent = talla;
-  
-  document.querySelectorAll('.tallas button').forEach(btn => {
-    btn.classList.remove('seleccionada');
-  });
-  event.target.classList.add('seleccionada');
-}
-
-async function agregarCarrito() {
-  if (!tallaSeleccionada) {
-    alert("❌ Selecciona una talla primero.");
-    return;
-  }
-
-  // Verificar autenticación (Auth0 o local)
-  let isAuthenticated = false;
-  
-  if (auth0Client) {
-    try {
-      isAuthenticated = await auth0Client.isAuthenticated();
-    } catch (error) {
-      console.error('Error verificando auth:', error);
-    }
-  } else {
-    isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
-  }
-
-  if (!isAuthenticated) {
-    alert("🔐 Debes iniciar sesión para agregar al carrito.");
-    if (auth0Client) {
-      await login();
-    } else {
-      localStorage.setItem('userLoggedIn', 'true');
-      showFallbackAuth();
-    }
-    return;
-  }
-
-  document.getElementById("miModal").style.display = "flex";
-}
-
-function cerrarModal() {
-  document.getElementById("miModal").style.display = "none";
-}
-
-function irUpload() {
-  if (!tallaSeleccionada) {
-    alert("Selecciona una talla primero");
-    return;
-  }
-  window.location.href = "upload.html?talla=" + tallaSeleccionada;
-}
-
-// Inicializar
-window.onload = initAuth;
+  <!-- AppWrite SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0"></script>
+  <script src="main.js"></script>
+</body>
+</html>
