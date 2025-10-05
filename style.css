@@ -70,6 +70,7 @@ main { display: flex; justify-content: center; align-items: center; padding: 50p
 .producto-info h2 { margin: 0; font-size: 1.8rem; }
 .producto-info p { font-size: 1.2rem; margin: 10px 0; font-weight: bold; color: #f1c40f; }
 
+/* ESTILOS PARA TALLAS - ACTUALIZADOS */
 .tallas button {
   margin: 5px;
   padding: 10px 18px;
@@ -80,8 +81,20 @@ main { display: flex; justify-content: center; align-items: center; padding: 50p
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
-.tallas button:hover { background: #27ae60; transform: translateY(-2px); }
+.tallas button:hover { 
+  background: #27ae60; 
+  transform: translateY(-2px); 
+}
+
+/* ESTILO PARA TALLA SELECCIONADA */
+.tallas button.seleccionada {
+  background: #3498db;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 15px rgba(52, 152, 219, 0.7);
+  transform: scale(1.1);
+}
 
 .comprar-btn {
   margin-top: 15px;
@@ -95,10 +108,24 @@ main { display: flex; justify-content: center; align-items: center; padding: 50p
   cursor: pointer;
   transition: all 0.3s ease;
 }
-.comprar-btn:hover { background: #d35400; transform: scale(1.05); }
+.comprar-btn:hover { 
+  background: #d35400; 
+  transform: scale(1.05); 
+}
 
 /* Modal */
-.modal { display: none; position: fixed; z-index: 10; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; }
+.modal { 
+  display: none; 
+  position: fixed; 
+  z-index: 10; 
+  left: 0; 
+  top: 0; 
+  width: 100%; 
+  height: 100%; 
+  background: rgba(0,0,0,0.7); 
+  justify-content: center; 
+  align-items: center; 
+}
 .modal-contenido {
   background: #2c3e50;
   padding: 30px;
@@ -107,8 +134,16 @@ main { display: flex; justify-content: center; align-items: center; padding: 50p
   color: white;
   max-width: 400px;
   box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  position: relative;
 }
-.cerrar { float: right; font-size: 28px; cursor: pointer; color: #ecf0f1; }
+.cerrar { 
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  font-size: 28px; 
+  cursor: pointer; 
+  color: #ecf0f1; 
+}
 .cerrar:hover { color: #e74c3c; }
 
 /* Panda decorativo */
@@ -124,4 +159,24 @@ main { display: flex; justify-content: center; align-items: center; padding: 50p
   object-fit: cover;
   transition: transform 0.3s ease;
 }
-.panda-decoracion:hover { transform: scale(1.1) rotate(5deg); }
+.panda-decoracion:hover { 
+  transform: scale(1.1) rotate(5deg); 
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .producto {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .auth-buttons {
+    position: static;
+    margin-top: 15px;
+  }
+  
+  .panda-decoracion {
+    width: 80px;
+    height: 80px;
+  }
+}
