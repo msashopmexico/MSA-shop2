@@ -1,3 +1,4 @@
+<!-- upload.html ACTUALIZADO CON CLOUDINARY -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -21,28 +22,19 @@
       margin: 15px 0;
       border-radius: 10px;
       display: none;
-      border: 3px solid #3498db;
     }
     .upload-input {
       margin: 20px 0;
       padding: 10px;
       width: 100%;
       box-sizing: border-box;
-      background: rgba(255,255,255,0.9);
-      border: 2px dashed #3498db;
-      border-radius: 10px;
-      cursor: pointer;
-    }
-    .upload-input:hover {
-      background: rgba(255,255,255,1);
     }
     .info-pedido {
       background: rgba(255,255,255,0.1);
-      padding: 20px;
-      border-radius: 15px;
-      margin: 20px 0;
+      padding: 15px;
+      border-radius: 10px;
+      margin: 15px 0;
       text-align: left;
-      border-left: 4px solid #f39c12;
     }
     .loading {
       opacity: 0.7;
@@ -52,7 +44,6 @@
       color: #f39c12;
       margin: 10px 0;
       font-size: 14px;
-      font-weight: bold;
     }
     .panda-decoracion {
       position: fixed;
@@ -72,48 +63,13 @@
       transform: scale(1.1) rotate(5deg);
       box-shadow: 0 0 25px rgba(255,255,255,0.9);
     }
-    .debug-info {
-      background: rgba(52, 152, 219, 0.2);
-      padding: 12px;
-      border-radius: 10px;
-      margin: 15px 0;
-      font-size: 13px;
-      color: #3498db;
-      border-left: 4px solid #3498db;
-    }
-    .color-indicator {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      margin-right: 8px;
-      vertical-align: middle;
-      border: 2px solid #fff;
-    }
-    .requisitos {
-      background: rgba(231, 76, 60, 0.2);
-      padding: 10px;
-      border-radius: 8px;
-      margin: 10px 0;
-      font-size: 12px;
-      color: #e74c3c;
-      border-left: 4px solid #e74c3c;
-    }
-    .success-message {
-      background: rgba(46, 204, 113, 0.2);
-      padding: 15px;
-      border-radius: 10px;
-      margin: 15px 0;
-      color: #2ecc71;
-      border-left: 4px solid #2ecc71;
-    }
   </style>
 </head>
 <body>
   <header>
     <h1>Sube tu diseño</h1>
     <div style="position: absolute; top: 20px; right: 30px;">
-      <button onclick="volverAlInicio()" style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;">
+      <button onclick="volverAlInicio()" style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">
         ← Volver al Inicio
       </button>
     </div>
@@ -121,50 +77,25 @@
 
   <main>
     <div class="upload-container">
-      <h2>🎨 Personaliza tu Camisa</h2>
+      <h2>Sube tu diseño personalizado</h2>
       
       <div class="info-pedido">
-        <p><strong>📦 Producto:</strong> Camisa Personalizada</p>
-        <p><strong>🎨 Color:</strong> <span id="color-info">?</span></p>
-        <p><strong>📏 Talla:</strong> <span id="talla-info">?</span></p>
-        <p><strong>💰 Precio:</strong> $250 MXN</p>
-      </div>
-
-      <div class="debug-info" id="debugInfo">
-        🔍 <strong>Estado:</strong> Listo para subir diseño...
-      </div>
-
-      <div class="requisitos">
-        ⚠️ <strong>Requisitos:</strong> 
-        <br>• Formatos: PNG, JPG, JPEG
-        <br>• Tamaño máximo: 5MB
-        <br>• Resolución recomendada: 1000x1000px
+        <p><strong>Producto:</strong> Camiseta Lisa Negra</p>
+        <p><strong>Talla:</strong> <span id="talla-info">?</span></p>
+        <p><strong>Precio:</strong> $250 MXN</p>
       </div>
       
       <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" class="upload-input">
       <div id="fileInfo" class="file-info"></div>
-      
-      <div id="previewContainer" style="display: none;">
-        <h3>👀 Vista Previa:</h3>
-        <img id="previewImg" src="" alt="Vista previa de tu diseño">
-      </div>
-      
       <br>
-      <button id="enviarBtn" class="comprar-btn" style="margin-top: 20px;">
-        🚀 Enviar diseño y confirmar pedido
-      </button>
-
-      <div id="successMessage" class="success-message" style="display: none;">
-        ✅ ¡Diseño enviado exitosamente! Redirigiendo...
-      </div>
+      <img id="previewImg" src="" alt="Vista previa">
+      <br>
+      <button id="enviarBtn" class="comprar-btn">Enviar diseño y confirmar pedido</button>
     </div>
   </main>
 
   <!-- Panda decorativo -->
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()" title="¡Haz clic para volver al inicio! 🏠">
-
-  <!-- EmailJS SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
   <script>
     // Función para volver al inicio
@@ -179,75 +110,39 @@
       }, 300);
     }
 
-    // ⚙️ CONFIGURACIÓN CLOUDINARY
-    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze';
-    const CLOUDINARY_UPLOAD_PRESET = 'msa_shop_upload';
-
-    // Mapeo de colores
-    const colorMap = {
-      'blanco': { nombre: 'Blanco', clase: 'color-blanco' },
-      'negro': { nombre: 'Negro', clase: 'color-negro' },
-      'gris': { nombre: 'Gris', clase: 'color-gris' }
-    };
+    // Configuración Cloudinary (gratis)
+    const CLOUDINARY_CLOUD_NAME = 'dnzcup3ze'; // Reemplaza con tu cloud name
+    const CLOUDINARY_UPLOAD_PRESET = 'image_design'; // Reemplaza con tu upload preset
 
     // Elementos DOM
     const urlParams = new URLSearchParams(window.location.search);
-    const talla = urlParams.get('talla') || localStorage.getItem('tallaSeleccionada') || 'No especificada';
-    const color = urlParams.get('color') || localStorage.getItem('colorSeleccionado') || 'No especificado';
+    const talla = urlParams.get('talla') || 'No especificada';
+    document.getElementById('talla-info').textContent = talla;
 
     const fileInput = document.getElementById('fileInput');
     const previewImg = document.getElementById('previewImg');
-    const previewContainer = document.getElementById('previewContainer');
     const enviarBtn = document.getElementById('enviarBtn');
     const fileInfo = document.getElementById('fileInfo');
-    const debugInfo = document.getElementById('debugInfo');
-    const successMessage = document.getElementById('successMessage');
 
     let archivoSeleccionado = null;
 
-    // Mostrar información del pedido
-    function mostrarInfoPedido() {
-      const colorInfo = document.getElementById('color-info');
-      const tallaInfo = document.getElementById('talla-info');
-      
-      const colorData = colorMap[color] || { nombre: color, clase: 'color-gris' };
-      
-      colorInfo.innerHTML = `<span class="color-indicator ${colorData.clase}"></span>${colorData.nombre}`;
-      tallaInfo.textContent = talla;
-    }
-
-    // Actualizar info de debug
-    function actualizarDebug(mensaje) {
-      debugInfo.innerHTML = `🔍 <strong>Estado:</strong> ${mensaje}`;
-      console.log('🔍 Debug:', mensaje);
-    }
-
-    // Inicializar página
-    function inicializarPagina() {
-      mostrarInfoPedido();
-      actualizarDebug(`Pedido: Camisa ${colorMap[color]?.nombre || color} - Talla ${talla}`);
-    }
-
-    // Configurar evento del file input
     fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      // Verificar tamaño máximo
+      // Verificar tamaño máximo (5MB para Cloudinary)
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         alert('❌ La imagen es demasiado grande. Máximo 5MB permitido.');
         fileInput.value = '';
         fileInfo.textContent = '';
-        actualizarDebug('Archivo demasiado grande - máximo 5MB');
         return;
       }
 
       if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
-        alert('❌ Solo se permiten archivos PNG, JPG o JPEG');
+        alert('Solo se permiten archivos PNG, JPG o JPEG');
         fileInput.value = '';
         fileInfo.textContent = '';
-        actualizarDebug('Formato de archivo no válido');
         return;
       }
 
@@ -255,53 +150,45 @@
       
       // Mostrar información del archivo
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      fileInfo.textContent = `📁 ${file.name} (${sizeMB} MB)`;
-      actualizarDebug(`Archivo listo: ${file.name} (${sizeMB} MB)`);
+      fileInfo.textContent = `Archivo: ${file.name} (${sizeMB} MB)`;
       
-      // Mostrar vista previa
       const reader = new FileReader();
       reader.onload = function(e) {
         previewImg.src = e.target.result;
-        previewContainer.style.display = 'block';
-        actualizarDebug('Vista previa generada');
+        previewImg.style.display = 'block';
       };
       reader.readAsDataURL(file);
     });
 
     // Función para subir imagen a Cloudinary
     async function subirACloudinary(archivo) {
-      actualizarDebug('☁️ Iniciando subida a Cloudinary...');
-      
       const formData = new FormData();
       formData.append('file', archivo);
       formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-      
-      const url = `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/upload`;
+      formData.append('cloud_name', CLOUDINARY_CLOUD_NAME);
 
       try {
-        const response = await fetch(url, {
+        const response = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
           method: 'POST',
           body: formData
         });
 
         if (!response.ok) {
-          const errorText = await response.text();
-          throw new Error(`Cloudinary error ${response.status}: ${errorText}`);
+          throw new Error('Error al subir la imagen');
         }
 
         const data = await response.json();
-        actualizarDebug('✅ Imagen subida a Cloudinary exitosamente');
-        return data.secure_url;
+        console.log('✅ Imagen subida a Cloudinary:', data.secure_url);
+        return data.secure_url; // URL pública de la imagen
 
       } catch (error) {
-        console.error('❌ Error Cloudinary:', error);
-        actualizarDebug(`❌ Error Cloudinary: ${error.message}`);
+        console.error('❌ Error subiendo a Cloudinary:', error);
         throw error;
       }
     }
 
-    // Función alternativa: Convertir imagen a Base64 pequeño
-    function imagenABase64Pequeno(archivo, maxWidth = 400) {
+    // Función para comprimir imagen antes de subir
+    function comprimirImagen(file, maxWidth = 1200, calidad = 0.8) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         
@@ -313,6 +200,7 @@
             let width = img.width;
             let height = img.height;
 
+            // Redimensionar si es muy grande
             if (width > maxWidth) {
               height = Math.round((height * maxWidth) / width);
               width = maxWidth;
@@ -324,8 +212,19 @@
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
 
-            const base64 = canvas.toDataURL('image/jpeg', 0.5);
-            resolve(base64);
+            // Convertir a blob
+            canvas.toBlob(
+              (blob) => {
+                if (blob) {
+                  console.log(`✅ Imagen comprimida: ${(blob.size / 1024).toFixed(2)} KB`);
+                  resolve(blob);
+                } else {
+                  reject(new Error('Error al comprimir imagen'));
+                }
+              },
+              'image/jpeg',
+              calidad
+            );
           };
 
           img.onerror = reject;
@@ -333,152 +232,90 @@
         };
 
         reader.onerror = reject;
-        reader.readAsDataURL(archivo);
+        reader.readAsDataURL(file);
       });
     }
 
-    // Función principal para enviar el pedido
     enviarBtn.addEventListener('click', async function() {
       if (!archivoSeleccionado) {
         alert('❌ Por favor selecciona un archivo primero');
         return;
       }
 
-      // Obtener datos del usuario
+      // Obtener datos del usuario desde localStorage
       const userData = JSON.parse(localStorage.getItem('userData') || '{}');
 
-      // Deshabilitar botón y mostrar loading
-      enviarBtn.textContent = '⏳ Procesando...';
+      enviarBtn.textContent = 'Subiendo imagen...';
       enviarBtn.disabled = true;
       enviarBtn.classList.add('loading');
 
       try {
-        let imagenUrl = '';
-        let metodoSubida = '';
+        // 1. Comprimir imagen
+        console.log('📐 Comprimiendo imagen...');
+        const imagenComprimida = await comprimirImagen(archivoSeleccionado);
 
-        // INTENTAR CLOUDINARY PRIMERO
-        try {
-          actualizarDebug('🔄 Intentando subir a Cloudinary...');
-          enviarBtn.textContent = '☁️ Subiendo a Cloudinary...';
-          imagenUrl = await subirACloudinary(archivoSeleccionado);
-          metodoSubida = 'cloudinary';
-          actualizarDebug('✅ Cloudinary exitoso - imagen subida');
-        } catch (cloudinaryError) {
-          console.warn('⚠️ Cloudinary falló, intentando Base64...', cloudinaryError);
-          
-          // FALLBACK: Usar Base64 comprimido
-          try {
-            actualizarDebug('🔄 Fallback: Comprimiendo imagen...');
-            enviarBtn.textContent = '📐 Comprimiendo imagen...';
-            imagenUrl = await imagenABase64Pequeno(archivoSeleccionado, 300);
-            metodoSubida = 'base64';
-            actualizarDebug('✅ Imagen comprimida a Base64');
-          } catch (base64Error) {
-            console.error('❌ Base64 también falló:', base64Error);
-            imagenUrl = `Archivo: ${archivoSeleccionado.name} (No se pudo procesar la imagen)`;
-            metodoSubida = 'error';
-            actualizarDebug('⚠️ Usando descripción en lugar de imagen');
-          }
-        }
+        // 2. Subir a Cloudinary
+        console.log('☁️ Subiendo a Cloudinary...');
+        const imagenUrl = await subirACloudinary(imagenComprimida);
 
-        // Preparar datos para el email
-        const colorData = colorMap[color] || { nombre: color };
+        // 3. Enviar email con EmailJS (AHORA SÍ CON LA IMAGEN)
+        console.log('📧 Enviando email...');
         
         const templateParams = {
           nombre: userData.nombre || "Cliente MSA",
           email: userData.email || "cliente@msashop.com",
-          productos: `Camisa Personalizada - Color: ${colorData.nombre} - Talla: ${talla}`,
+          productos: `Camiseta Lisa Negra Personalizada - Talla: ${talla}`,
           total: "$250 MXN",
           fecha: new Date().toLocaleDateString('es-MX'),
           direccion: userData.direccion || "No especificada",
           ciudad: "Guadalajara",
           codigo_postal: "45000",
           telefono: userData.telefono || "No proporcionado",
-          imagen_url: imagenUrl,
-          metodo_subida: metodoSubida,
-          mensaje_adicional: `El cliente ha solicitado una camisa personalizada con las siguientes especificaciones:
-          
-Color: ${colorData.nombre}
-Talla: ${talla}
-Archivo de diseño: ${archivoSeleccionado.name}
-          
-Por favor contactar al cliente para confirmar detalles del diseño.`
+          imagen_url: imagenUrl // ✅ AHORA SÍ ENVIAMOS LA URL DE LA IMAGEN
         };
 
-        actualizarDebug('📧 Preparando envío de email...');
-        enviarBtn.textContent = '📤 Enviando email...';
-
-        // Inicializar y enviar con EmailJS
+        // Inicializar EmailJS
         await emailjs.init("PhV4Hp36EPOLiGe6t");
-        const resultado = await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
+        
+        const resultado = await emailjs.send(
+          "service_4450mrz",
+          "template_biyacaa", 
+          templateParams
+        );
 
         console.log('✅ Email enviado exitosamente:', resultado);
-        actualizarDebug('✅ Pedido completado y email enviado');
+        alert('✅ ¡Pedido confirmado! Se ha enviado el diseño completo por email.');
         
-        // Mostrar mensaje de éxito
-        successMessage.style.display = 'block';
-        enviarBtn.style.display = 'none';
-        
-        let mensajeExito = '';
-        if (metodoSubida === 'cloudinary') {
-          mensajeExito = '✅ ¡Pedido confirmado! Se ha enviado el diseño COMPLETO por email.';
-        } else if (metodoSubida === 'base64') {
-          mensajeExito = '✅ ¡Pedido confirmado! Se ha enviado el diseño (imagen comprimida) por email.';
-        } else {
-          mensajeExito = '✅ ¡Pedido confirmado! Se ha enviado la información del pedido.';
-        }
-        
-        alert(mensajeExito);
-        
-        // Redirigir después de 3 segundos
         setTimeout(() => {
           window.location.href = 'index.html';
         }, 3000);
 
       } catch (error) {
         console.error('❌ Error completo:', error);
-        actualizarDebug(`❌ Error final: ${error.message}`);
-        
-        let mensajeError = 'Error al enviar el pedido: ';
         
         if (error.message.includes('Cloudinary')) {
-          mensajeError += 'Problema con el servicio de imágenes. ';
-        }
-        
-        if (error.status === 413) {
-          mensajeError += 'La imagen es demasiado grande. Intenta con un archivo más pequeño.';
+          alert('❌ Error al subir la imagen. Intenta con una imagen más pequeña o intenta más tarde.');
+        } else if (error.status === 413) {
+          alert('❌ La imagen es demasiado grande. Intenta con una imagen más pequeña.');
         } else {
-          mensajeError += error.text || error.message || 'Error desconocido';
+          alert('❌ Error: ' + (error.text || error.message || 'Error desconocido'));
         }
-        
-        alert('❌ ' + mensajeError);
         
         // Restaurar botón
-        enviarBtn.textContent = '🚀 Enviar diseño y confirmar pedido';
+        enviarBtn.textContent = 'Enviar diseño y confirmar pedido';
         enviarBtn.disabled = false;
         enviarBtn.classList.remove('loading');
       }
     });
 
-    // Inicializar la página cuando cargue
-    document.addEventListener('DOMContentLoaded', function() {
-      inicializarPagina();
-      actualizarDebug('Página cargada correctamente');
-    });
-
-    // Verificar autenticación
-    function verificarAutenticacion() {
+    // Cargar datos del usuario
+    function cargarDatosUsuario() {
       const userData = localStorage.getItem('userData');
-      if (!userData) {
-        alert('❌ Debes iniciar sesión para subir diseños');
-        window.location.href = 'index.html';
-        return;
-      }
-      actualizarDebug('Usuario autenticado correctamente');
+      return userData ? JSON.parse(userData) : {};
     }
-
-    // Ejecutar verificación de autenticación
-    verificarAutenticacion();
   </script>
+
+  <!-- EmailJS SDK -->
+  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </body>
 </html>
