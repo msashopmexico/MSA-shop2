@@ -1,217 +1,272 @@
+let auth0Client = null;
 let tallaSeleccionada = null;
-let client = null;
-let account = null;
-let isLoginMode = true;
+let authInitialized = false;
 
-// Inicializar AppWrite
-function initAppWrite() {
-    try {
-        client = new Appwrite.Client();
-        client
-            .setEndpoint('https://cloud.appwrite.io/v1') // Usa tu endpoint
-            .setProject('TU_PROJECT_ID'); // Reemplaza con tu Project ID
+async function initAuth() {
+  // Evitar múltiples inicializaciones
+  if (authInitialized) return;
+  authInitialized = true;
 
-        account = new Appwrite.Account(client);
-        
-        // Verificar si ya está logueado
-        checkAuthStatus();
-        
-    } catch (error) {
-        console.error('Error AppWrite:', error);
-        setupLocalAuth();
-    }
-}
-
-async function checkAuthStatus() {
-    try {
-        const user = await account.get();
-        updateAuthButtons(true, user.email);
-    } catch (error) {
-        updateAuthButtons(false);
-    }
-}
-
-function updateAuthButtons(isAuthenticated, userEmail = '') {
-    const loginBtn = document.querySelector(".btn-login");
-    const registerBtn = document.querySelector(".btn-register");
-
-    if (!loginBtn || !registerBtn) return;
-
-    if (isAuthenticated) {
-        loginBtn.textContent = `Cerrar (${userEmail})`;
-        loginBtn.onclick = () => logout();
-        registerBtn.style.display = "none";
-    } else {
-        loginBtn.textContent = "Iniciar sesión";
-        loginBtn.onclick = () => showAuthModal(true);
-        registerBtn.textContent = "Registrarse";
-        registerBtn.onclick = () => showAuthModal(false);
-        registerBtn.style.display = "inline-block";
-    }
-}
-
-function showAuthModal(loginMode = true) {
-    isLoginMode = loginMode;
-    document.getElementById('authTitle').textContent = loginMode ? 'Iniciar Sesión' : 'Registrarse';
-    document.getElementById('authSwitch').textContent = loginMode ? 
-        '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
-    document.getElementById('authModal').style.display = 'flex';
+  try {
+    console.log('🚀 Iniciando Auth0...');
     
-    // Limpiar campos
-    document.getElementById('authEmail').value = '';
-    document.getElementById('authPassword').value = '';
-}
-
-function cerrarAuthModal() {
-    document.getElementById('authModal').style.display = 'none';
-}
-
-function toggleAuthMode() {
-    showAuthModal(!isLoginMode);
-}
-
-async function procesarAuth() {
-    const email = document.getElementById('authEmail').value;
-    const password = document.getElementById('authPassword').value;
-
-    if (!email || !password) {
-        alert('Por favor completa todos los campos');
-        return;
+    if (typeof auth0 === 'undefined') {
+      console.error('❌ Auth0 SDK no cargado');
+      showFallbackAuth();
+      return;
     }
 
-    try {
-        if (isLoginMode) {
-            // Login
-            await account.createEmailSession(email, password);
-            const user = await account.get();
-            alert('✅ Sesión iniciada correctamente');
-            updateAuthButtons(true, user.email);
-        } else {
-            // Registro
-            await account.create('unique()', email, password);
-            await account.createEmailSession(email, password);
-            const user = await account.get();
-            alert('✅ Cuenta creada y sesión iniciada');
-            updateAuthButtons(true, user.email);
-        }
-        cerrarAuthModal();
-    } catch (error) {
-        console.error('Error auth:', error);
-        alert('❌ Error: ' + error.message);
-    }
-}
-
-async function logout() {
-    try {
-        await account.deleteSession('current');
-        alert('👋 Sesión cerrada');
-        updateAuthButtons(false);
-    } catch (error) {
-        console.error('Error logout:', error);
-    }
-}
-
-// Sistema de respaldo local
-function setupLocalAuth() {
-    console.log('🔧 Usando autenticación local');
-    let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
-    let userEmail = localStorage.getItem('userEmail') || '';
-    
-    const loginBtn = document.querySelector(".btn-login");
-    const registerBtn = document.querySelector(".btn-register");
-    
-    if (!loginBtn || !registerBtn) return;
-    
-    if (loggedIn) {
-        loginBtn.textContent = `Cerrar (${userEmail})`;
-        loginBtn.onclick = () => {
-            localStorage.setItem('userLoggedIn', 'false');
-            setupLocalAuth();
-            alert('Sesión cerrada');
-        };
-        registerBtn.style.display = "none";
-    } else {
-        loginBtn.textContent = "Iniciar sesión";
-        loginBtn.onclick = () => {
-            const email = prompt('Email:');
-            const password = prompt('Contraseña:');
-            if (email && password) {
-                localStorage.setItem('userLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
-                setupLocalAuth();
-                alert('✅ Sesión iniciada');
-            }
-        };
-        registerBtn.textContent = "Registrarse";
-        registerBtn.onclick = () => {
-            const email = prompt('Email para registro:');
-            const password = prompt('Contraseña:');
-            if (email && password) {
-                localStorage.setItem('userLoggedIn', 'true');
-                localStorage.setItem('userEmail', email);
-                setupLocalAuth();
-                alert('✅ Cuenta creada y sesión iniciada');
-            }
-        };
-        registerBtn.style.display = "inline-block";
-    }
-}
-
-// Funciones del carrito
-function seleccionarTalla(talla) {
-    tallaSeleccionada = talla;
-    document.getElementById("tallaSeleccionada").textContent = talla;
-    
-    document.querySelectorAll('.tallas button').forEach(btn => {
-        btn.classList.remove('seleccionada');
+    // Configuración para Netlify
+    auth0Client = await auth0.createAuth0Client({
+      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
+      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
+      cacheLocation: "localstorage",
+      authorizationParams: {
+        redirect_uri: window.location.origin + "/"
+      }
     });
-    event.target.classList.add('seleccionada');
-}
 
-async function agregarCarrito() {
-    if (!tallaSeleccionada) {
-        alert("❌ Selecciona una talla primero.");
-        return;
+    console.log('✅ Cliente Auth0 creado');
+
+    // VERIFICAR SI ESTAMOS EN UN CALLBACK - CORREGIDO
+    const urlParams = new URLSearchParams(window.location.search);
+    const hasAuthParams = urlParams.has('code') || urlParams.has('error');
+    
+    if (hasAuthParams) {
+      console.log('🔄 Procesando callback de Auth0...');
+      try {
+        const result = await auth0Client.handleRedirectCallback();
+        console.log('✅ Callback exitoso, usuario:', result.user);
+        
+        // Limpiar URL SIN recargar inmediatamente
+        const cleanUrl = window.location.origin + "/";
+        window.history.replaceState({}, document.title, cleanUrl);
+        
+      } catch (error) {
+        console.error('❌ Error en callback:', error);
+      }
     }
 
     // Verificar autenticación
-    let isAuthenticated = false;
-    let userEmail = '';
+    const isAuthenticated = await auth0Client.isAuthenticated();
+    console.log('🔐 Usuario autenticado:', isAuthenticated);
     
-    if (account) {
-        try {
-            const user = await account.get();
-            isAuthenticated = true;
-            userEmail = user.email;
-        } catch (error) {
-            isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
-            userEmail = localStorage.getItem('userEmail') || '';
-        }
+    updateAuthButtons(isAuthenticated);
+
+  } catch (error) {
+    console.error('💥 Error inicializando Auth0:', error);
+    showFallbackAuth();
+  }
+}
+
+function showFallbackAuth() {
+  console.log('🔧 Usando autenticación local');
+  let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
+  let userEmail = localStorage.getItem('userEmail') || 'Usuario';
+  
+  const loginBtn = document.querySelector(".btn-login");
+  const registerBtn = document.querySelector(".btn-register");
+  
+  if (!loginBtn || !registerBtn) return;
+  
+  if (loggedIn) {
+    loginBtn.textContent = `Cerrar (${userEmail})`;
+    loginBtn.onclick = () => {
+      localStorage.setItem('userLoggedIn', 'false');
+      showFallbackAuth();
+      alert('👋 Sesión cerrada');
+    };
+    registerBtn.style.display = "none";
+  } else {
+    loginBtn.textContent = "Iniciar sesión";
+    loginBtn.onclick = () => {
+      const email = prompt('📧 Email (modo desarrollo):', 'cliente@msashop.com');
+      if (email) {
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        showFallbackAuth();
+        alert(`✅ Sesión iniciada como: ${email}`);
+      }
+    };
+    registerBtn.textContent = "Registrarse";
+    registerBtn.onclick = () => {
+      const email = prompt('📧 Email para registro:', 'nuevo@msashop.com');
+      if (email) {
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userEmail', email);
+        showFallbackAuth();
+        alert(`✅ Cuenta creada: ${email}`);
+      }
+    };
+    registerBtn.style.display = "inline-block";
+  }
+}
+
+function updateAuthButtons(isAuthenticated) {
+  const loginBtn = document.querySelector(".btn-login");
+  const registerBtn = document.querySelector(".btn-register");
+
+  if (!loginBtn || !registerBtn) return;
+
+  if (isAuthenticated) {
+    loginBtn.textContent = "Cerrar sesión";
+    loginBtn.onclick = () => logout();
+    registerBtn.style.display = "none";
+    console.log('✅ Botones: Usuario autenticado');
+  } else {
+    loginBtn.textContent = "Iniciar sesión";
+    loginBtn.onclick = () => login();
+    registerBtn.textContent = "Registrarse";
+    registerBtn.onclick = () => register();
+    registerBtn.style.display = "inline-block";
+    console.log('✅ Botones: Usuario no autenticado');
+  }
+}
+
+async function login() {
+  if (!auth0Client) {
+    alert('⚠️ Redirigiendo a Auth0...');
+    // Fallback directo a Auth0
+    window.location.href = `https://dev-r83h8xsmacihkvil.us.auth0.com/authorize?response_type=code&client_id=PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf&redirect_uri=${encodeURIComponent('https://msa-shop.netlify.app/')}`;
+    return;
+  }
+
+  try {
+    console.log('🔐 Iniciando flujo de login...');
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: 'https://msa-shop.netlify.app/'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en login:', error);
+    // Fallback manual
+    window.location.href = `https://dev-r83h8xsmacihkvil.us.auth0.com/authorize?response_type=code&client_id=PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf&redirect_uri=${encodeURIComponent('https://msa-shop.netlify.app/')}`;
+  }
+}
+
+async function register() {
+  if (!auth0Client) {
+    alert('⚠️ Redirigiendo a registro Auth0...');
+    window.location.href = `https://dev-r83h8xsmacihkvil.us.auth0.com/authorize?response_type=code&client_id=PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf&redirect_uri=${encodeURIComponent('https://msa-shop.netlify.app/')}&screen_hint=signup`;
+    return;
+  }
+
+  try {
+    console.log('📝 Iniciando flujo de registro...');
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        screen_hint: "signup",
+        redirect_uri: 'https://msa-shop.netlify.app/'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en registro:', error);
+    window.location.href = `https://dev-r83h8xsmacihkvil.us.auth0.com/authorize?response_type=code&client_id=PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf&redirect_uri=${encodeURIComponent('https://msa-shop.netlify.app/')}&screen_hint=signup`;
+  }
+}
+
+async function logout() {
+  if (!auth0Client) {
+    // Limpiar modo local
+    localStorage.setItem('userLoggedIn', 'false');
+    showFallbackAuth();
+    return;
+  }
+
+  try {
+    await auth0Client.logout({
+      logoutParams: {
+        returnTo: 'https://msa-shop.netlify.app/'
+      }
+    });
+  } catch (error) {
+    console.error('❌ Error en logout:', error);
+  }
+}
+
+// Funciones del carrito - MEJORADAS
+function seleccionarTalla(talla) {
+  tallaSeleccionada = talla;
+  const tallaElement = document.getElementById("tallaSeleccionada");
+  if (tallaElement) {
+    tallaElement.textContent = talla;
+  }
+  
+  // Resaltar botón seleccionado
+  document.querySelectorAll('.tallas button').forEach(btn => {
+    btn.classList.remove('seleccionada');
+  });
+  event.target.classList.add('seleccionada');
+  
+  console.log(`📏 Talla seleccionada: ${talla}`);
+}
+
+async function agregarCarrito() {
+  if (!tallaSeleccionada) {
+    alert("❌ Por favor selecciona una talla primero.");
+    return;
+  }
+
+  // Verificar autenticación de forma más robusta
+  let isAuthenticated = false;
+  
+  if (auth0Client) {
+    try {
+      isAuthenticated = await auth0Client.isAuthenticated();
+    } catch (error) {
+      console.log('⚠️ Fallback a autenticación local');
+      isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
+    }
+  } else {
+    isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
+  }
+
+  if (!isAuthenticated) {
+    alert("🔐 Debes iniciar sesión para agregar productos al carrito.");
+    
+    if (auth0Client) {
+      if (confirm('¿Quieres iniciar sesión con Auth0?')) {
+        await login();
+      }
     } else {
-        isAuthenticated = localStorage.getItem('userLoggedIn') === 'true';
-        userEmail = localStorage.getItem('userEmail') || '';
+      if (confirm('¿Iniciar sesión en modo desarrollo?')) {
+        localStorage.setItem('userLoggedIn', 'true');
+        localStorage.setItem('userEmail', 'cliente@msashop.com');
+        showFallbackAuth();
+        // Reintentar después de login
+        setTimeout(() => agregarCarrito(), 500);
+      }
     }
+    return;
+  }
 
-    if (!isAuthenticated) {
-        alert("🔐 Debes iniciar sesión para agregar al carrito.");
-        showAuthModal(true);
-        return;
-    }
-
-    document.getElementById("miModal").style.display = "flex";
+  // Si está autenticado, mostrar modal
+  console.log('🛒 Abriendo modal de confirmación');
+  document.getElementById("miModal").style.display = "flex";
 }
 
 function cerrarModal() {
-    document.getElementById("miModal").style.display = "none";
+  document.getElementById("miModal").style.display = "none";
+  console.log('❌ Modal cerrado');
 }
 
 function irUpload() {
-    if (!tallaSeleccionada) {
-        alert("Selecciona una talla primero");
-        return;
-    }
-    window.location.href = "upload.html?talla=" + tallaSeleccionada;
+  if (!tallaSeleccionada) {
+    alert("⚠️ Por favor selecciona una talla primero.");
+    return;
+  }
+  console.log(`🎨 Redirigiendo a upload con talla: ${tallaSeleccionada}`);
+  window.location.href = "upload.html?talla=" + encodeURIComponent(tallaSeleccionada);
 }
 
-// Inicializar
-window.onload = initAppWrite;
+// Inicialización mejorada
+window.addEventListener('load', function() {
+  console.log('📄 Página cargada, inicializando Auth...');
+  initAuth();
+});
+
+// También inicializar cuando el DOM esté listo
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 DOM listo');
+});
