@@ -6,7 +6,7 @@ const initAuth = async () => {
     domain: "dev-r83h8xsmacihkvil.us.auth0.com",
     client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
     cacheLocation: "localstorage",
-    redirect_uri: "https://msa-shop.netlify.app/"
+    redirect_uri: window.location.origin
   });
 
   if (window.location.search.includes("code=")) {
@@ -14,8 +14,8 @@ const initAuth = async () => {
     window.history.replaceState({}, document.title, "/");
   }
 
-  const isAuthenticated = await auth0.isAuthenticated();
-  updateAuthButtons(isAuthenticated);
+  const logged = await auth0.isAuthenticated();
+  updateAuthButtons(logged);
 };
 
 const updateAuthButtons = (logged) => {
@@ -24,19 +24,18 @@ const updateAuthButtons = (logged) => {
 
   if (logged) {
     loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = async () => {
-      await auth0.logout({ returnTo: "https://msa-shop.netlify.app/" });
-    };
+    loginBtn.onclick = async () => auth0.logout({ returnTo: window.location.origin });
     registerBtn.style.display = "none";
   } else {
     loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = async () => { await auth0.loginWithRedirect(); };
+    loginBtn.onclick = async () => auth0.loginWithRedirect();
     registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = async () => { await auth0.loginWithRedirect({ screen_hint: "signup" }); };
+    registerBtn.onclick = async () => auth0.loginWithRedirect({ screen_hint: "signup" });
     registerBtn.style.display = "inline-block";
   }
 };
 
+// Funciones del carrito
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
   document.getElementById("tallaSeleccionada").textContent = talla;
