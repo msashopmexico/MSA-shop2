@@ -19,7 +19,6 @@ function initFirebase() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         console.log('👤 Usuario autenticado:', user.email);
-        // Cargar datos adicionales del usuario
         cargarDatosUsuario(user.uid);
         updateAuthUI(true, user.email);
       } else {
@@ -72,7 +71,6 @@ function updateAuthUI(isLoggedIn, userEmail = '') {
 function showAuthModal(mode) {
   authMode = mode;
   
-  // Actualizar título y texto del botón
   document.getElementById('authTitle').textContent = 
     mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
   document.getElementById('authButtonText').textContent = 
@@ -124,7 +122,6 @@ function validarEdad(fechaNacimiento) {
 
 // Validar teléfono mexicano
 function validarTelefono(telefono) {
-  // Formato mexicano: 10 dígitos, puede empezar con +52
   const regex = /^(\+52\s?)?(\d{10})$/;
   return regex.test(telefono.replace(/\s/g, ''));
 }
@@ -140,13 +137,11 @@ async function procesarAuth() {
       const fechaNacimiento = document.getElementById('authFechaNacimiento').value;
       const password = document.getElementById('authPasswordRegistro').value;
 
-      // Validar campos vacíos
       if (!nombre || !email || !telefono || !direccion || !fechaNacimiento || !password) {
         alert('❌ Por favor completa todos los campos');
         return;
       }
 
-      // Validar email
       if (!email.includes('@')) {
         alert('❌ Por favor ingresa un email válido');
         return;
@@ -243,15 +238,23 @@ async function logout() {
   }
 }
 
-// Funciones del carrito
+// Funciones del carrito - CORREGIDAS
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
-  document.getElementById("tallaSeleccionada").textContent = talla;
   
+  // VERIFICAR que el elemento existe antes de modificarlo
+  const tallaElement = document.getElementById("tallaSeleccionada");
+  if (tallaElement) {
+    tallaElement.textContent = talla;
+  }
+  
+  // Resaltar botón seleccionado
   document.querySelectorAll('.tallas button').forEach(btn => {
     btn.classList.remove('seleccionada');
   });
   event.target.classList.add('seleccionada');
+  
+  console.log(`📏 Talla seleccionada: ${talla}`);
 }
 
 async function agregarCarrito() {
@@ -269,11 +272,21 @@ async function agregarCarrito() {
     return;
   }
 
-  document.getElementById("miModal").style.display = "flex";
+  // VERIFICAR que el modal existe antes de mostrarlo
+  const modal = document.getElementById("miModal");
+  if (modal) {
+    modal.style.display = "flex";
+  } else {
+    console.error('❌ Modal no encontrado');
+    alert('Error: No se puede mostrar la confirmación');
+  }
 }
 
 function cerrarModal() {
-  document.getElementById("miModal").style.display = "none";
+  const modal = document.getElementById("miModal");
+  if (modal) {
+    modal.style.display = "none";
+  }
 }
 
 function irUpload() {
@@ -281,7 +294,90 @@ function irUpload() {
     alert("Selecciona una talla primero");
     return;
   }
+  
+  // Guardar selección en localStorage para la página de upload
+  localStorage.setItem('tallaSeleccionada', tallaSeleccionada);
+  
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
+}
+
+// Sistema de respaldo local
+function setupLocalAuth() {
+  console.log('🔧 Usando autenticación local');
+  let loggedIn = localStorage.getItem('userLoggedIn') === 'true';
+  let userEmail = localStorage.getItem('userEmail') || '';
+  
+  const loginBtn = document.querySelector(".btn-login");
+  const registerBtn = document.querySelector(".btn-register");
+  
+  if (!loginBtn || !registerBtn) return;
+  
+  if (loggedIn) {
+    loginBtn.textContent = `Cerrar (${userEmail})`;
+    loginBtn.onclick = () => {
+      localStorage.setItem('userLoggedIn', 'false');
+      setupLocalAuth();
+      alert('Sesión cerrada');
+    };
+    registerBtn.style.display = "none";
+  } else {
+    loginBtn.textContent = "Iniciar sesión";
+    loginBtn.onclick = () => showLocalAuth('login');
+    registerBtn.textContent = "Registrarse";
+    registerBtn.onclick = () => showLocalAuth('register');
+    registerBtn.style.display = "inline-block";
+  }
+}
+
+function showLocalAuth(mode) {
+  if (mode === 'login') {
+    const email = prompt('📧 Email:');
+    const password = prompt('🔒 Contraseña:');
+    if (email && password) {
+      localStorage.setItem('userLoggedIn', 'true');
+      localStorage.setItem('userEmail', email);
+      setupLocalAuth();
+      alert('✅ Sesión iniciada (modo local)');
+    }
+  } else {
+    // Registro local con validaciones
+    const nombre = prompt('👤 Nombre completo:');
+    if (!nombre) return;
+    
+    const email = prompt('📧 Email:');
+    if (!email) return;
+    
+    const direccion = prompt('🏠 Dirección completa:');
+    if (!direccion) return;
+    
+    const fechaNacimiento = prompt('🎂 Fecha de nacimiento (YYYY-MM-DD):');
+    if (!fechaNacimiento) return;
+    
+    // Validar edad localmente
+    if (!validarEdad(fechaNacimiento)) {
+      alert('❌ Debes tener al menos 13 años para registrarte');
+      return;
+    }
+    
+    const telefono = prompt('📞 Teléfono:');
+    const password = prompt('🔒 Contraseña:');
+    
+    if (password) {
+      localStorage.setItem('userLoggedIn', 'true');
+      localStorage.setItem('userEmail', email);
+      localStorage.setItem('userNombre', nombre);
+      localStorage.setItem('userDireccion', direccion);
+      localStorage.setItem('userTelefono', telefono);
+      localStorage.setItem('userFechaNacimiento', fechaNacimiento);
+      setupLocalAuth();
+      alert('✅ Cuenta creada (modo local)');
+    }
+  }
+}
+
+// Función para volver al inicio
+function volverAlInicio() {
+  window.location.href = 'index.html';
 }
 
 // Inicializar
