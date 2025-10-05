@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Subir diseño - MSA Shop</title>
+<title>Subir Diseño - MSA Shop</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,53 +11,63 @@
   <h1>Sube tu diseño</h1>
   <div class="header-buttons">
     <button onclick="window.location.href='index.html'">Inicio</button>
-    <button onclick="window.location.href='carrito.html'">Carrito</button>
+    <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
   </div>
 </header>
 
 <div class="container">
-  <div class="producto">
-    <h2>Preview de tu diseño</h2>
-    <div id="preview-container">
-      <img id="preview" src="" alt="Preview" style="max-width:300px; display:none;"/>
-    </div>
-    <input type="file" id="file-input" accept="image/png,image/jpeg">
-    <button id="upload-btn">Enviar diseño</button>
-  </div>
+  <input type="file" id="fileInput" accept="image/png, image/jpeg" />
+  <div id="preview" style="margin-top:20px;"></div>
+  <button id="enviar-btn" class="agregar">Enviar Pedido</button>
 </div>
 
-<script type="module">
-import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
-
+<script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+<script>
 emailjs.init('PhV4Hp36EPOLiGe6t');
 
-const fileInput = document.getElementById("file-input");
+const fileInput = document.getElementById("fileInput");
 const preview = document.getElementById("preview");
+let selectedFile = null;
 
-fileInput.addEventListener("change", (e) => {
+fileInput.addEventListener("change", (e)=>{
   const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function() { preview.src = reader.result; preview.style.display = "block"; }
-  reader.readAsDataURL(file);
+  if(file && /image\/(png|jpeg|jpg)/.test(file.type)){
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = function(e){
+      preview.innerHTML = `<img src="${e.target.result}" style="max-width:300px;border-radius:12px;"/>`;
+    };
+    reader.readAsDataURL(file);
+  } else {
+    alert("Solo se permiten PNG, JPG o JPEG");
+  }
 });
 
-document.getElementById("upload-btn").addEventListener("click", async () => {
-  const file = fileInput.files[0];
-  if (!file) { alert("Selecciona un archivo."); return; }
+document.getElementById("enviar-btn").addEventListener("click", ()=>{
+  if(!selectedFile){
+    alert("Debes seleccionar un archivo");
+    return;
+  }
 
-  const formData = new FormData();
-  formData.append("file", file);
-
-  try {
-    await emailjs.send("service_4450mrz","template_biyacaa",{
+  const reader = new FileReader();
+  reader.onload = function(e){
+    const imgData = e.target.result;
+    emailjs.send("service_4450mrz","template_biyacaa",{
       nombre: "Cliente",
-      email: "cliente@correo.com",
-      productos: JSON.stringify(localStorage.getItem("carrito")),
-      link_diseno: preview.src
+      fecha: new Date().toLocaleString(),
+      productos: "Camiseta Custom",
+      total: "$300",
+      email: "cliente@ejemplo.com",
+      linkImagen: imgData
+    }).then(()=>{
+      alert("✅ Pedido enviado correctamente, revisa tu correo");
+      window.location.href="index.html";
+    }, (err)=>{
+      console.error(err);
+      alert("❌ Error al enviar el pedido");
     });
-    alert("✅ Diseño enviado correctamente!");
-  } catch(e) { console.error(e); alert("❌ Error al enviar el diseño."); }
+  };
+  reader.readAsDataURL(selectedFile);
 });
 </script>
 </body>

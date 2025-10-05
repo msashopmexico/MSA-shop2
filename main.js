@@ -1,54 +1,48 @@
-// Manejador de carrito y selección de talla
+let auth0 = null;
+
+async function initAuth() {
+  auth0 = await createAuth0Client({
+    domain: 'dev-r83h8xsmacihkvil.us.auth0.com',
+    client_id: 'PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf'
+  });
+
+  const isAuthenticated = await auth0.isAuthenticated();
+  if(isAuthenticated){
+    const user = await auth0.getUser();
+    console.log("Usuario logueado:", user);
+  } else {
+    document.getElementById("btn-agregar").addEventListener("click", async ()=>{
+      alert("❌ Necesitas iniciar sesión para comprar");
+      await auth0.loginWithRedirect({redirect_uri: window.location.href});
+    });
+  }
+
+  document.getElementById("login-btn").addEventListener("click", async ()=>{
+    await auth0.loginWithRedirect({redirect_uri: window.location.href});
+  });
+
+  document.getElementById("register-btn").addEventListener("click", async ()=>{
+    await auth0.loginWithRedirect({screen_hint:"signup", redirect_uri: window.location.href});
+  });
+}
+
+initAuth();
+
+// Carrito y talla
 const modal = document.getElementById("modal-talla");
 let productoSeleccionado = { nombre: "Camiseta Custom", precio: 300 };
 
-document.getElementById("btn-agregar").addEventListener("click", () => {
-  modal.style.display = "flex";
-});
-
-function seleccionarTalla(talla) {
+function seleccionarTalla(talla){
   productoSeleccionado.talla = talla;
   let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
   carrito.push(productoSeleccionado);
   localStorage.setItem("carrito", JSON.stringify(carrito));
   modal.style.display = "none";
-  window.location.href = "upload.html";
+  window.location.href="upload.html";
 }
 
-function cerrarModal() {
-  modal.style.display = "none";
-}
+function cerrarModal(){ modal.style.display="none"; }
 
-// Mostrar carrito en carrito.html
-export function mostrarCarrito() {
-  const lista = document.getElementById("lista-carrito");
-  const totalTexto = document.getElementById("total");
-  if (!lista) return;
-
-  const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-  lista.innerHTML = "";
-  let total = 0;
-
-  carrito.forEach((item, index) => {
-    total += item.precio;
-    const li = document.createElement("li");
-    li.style.display = "flex";
-    li.style.justifyContent = "space-between";
-    li.style.alignItems = "center";
-    li.textContent = `${item.nombre} - Talla: ${item.talla} - $${item.precio} MXN`;
-
-    const btnEliminar = document.createElement("button");
-    btnEliminar.textContent = "Eliminar";
-    btnEliminar.classList.add("btn-red");
-    btnEliminar.addEventListener("click", () => {
-      carrito.splice(index, 1);
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-      mostrarCarrito();
-    });
-
-    li.appendChild(btnEliminar);
-    lista.appendChild(li);
-  });
-
-  totalTexto.textContent = `Total: $${total} MXN`;
-}
+document.getElementById("btn-agregar")?.addEventListener("click", ()=>{
+  modal.style.display="flex";
+});
