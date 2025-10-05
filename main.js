@@ -7,11 +7,120 @@ const firebaseConfig = {
 };
 
 let tallaSeleccionada = null;
+let colorSeleccionado = 'blanco';
 let authMode = 'login';
 let currentUserData = null;
 
-// Inicializar Firebase
-function initFirebase() {
+// Función para volver al inicio
+function volverAlInicio() {
+  const panda = document.querySelector('.panda-decoracion');
+  if (panda) {
+    panda.style.transform = 'scale(0.9) rotate(-10deg)';
+    panda.style.opacity = '0.7';
+  }
+  setTimeout(() => {
+    window.location.href = 'index.html';
+  }, 300);
+}
+
+// Función para seleccionar color
+function seleccionarColor(color) {
+  colorSeleccionado = color;
+  
+  // Actualizar interfaz de colores
+  document.querySelectorAll('.color-option').forEach(option => {
+    option.classList.remove('seleccionada');
+  });
+  document.querySelector(`.color-${color}`).classList.add('seleccionada');
+  
+  // Actualizar texto del color seleccionado
+  const colorTexto = {
+    'blanco': 'Blanco',
+    'negro': 'Negro', 
+    'gris': 'Gris'
+  };
+  document.getElementById('colorSeleccionadoTexto').textContent = `Color: ${colorTexto[color]}`;
+  
+  // Cambiar imagen del producto según el color
+  const productoImg = document.getElementById('productoImg');
+  switch(color) {
+    case 'blanco':
+      productoImg.src = 'img/camisetaLisaBlanca.png';
+      break;
+    case 'negro':
+      productoImg.src = 'img/camisetaLisaNegra.png';
+      break;
+    case 'gris':
+      productoImg.src = 'img/camisetaLisaGris.png';
+      break;
+  }
+  
+  console.log(`🎨 Color seleccionado: ${color}`);
+}
+
+// Función para seleccionar talla (actualizada)
+function seleccionarTalla(talla) {
+  tallaSeleccionada = talla;
+  
+  document.querySelectorAll('.tallas button').forEach(btn => {
+    btn.classList.remove('seleccionada');
+  });
+  event.target.classList.add('seleccionada');
+  
+  console.log(`📏 Talla seleccionada: ${talla}`);
+}
+
+// Función para agregar al carrito (actualizada)
+async function agregarCarrito() {
+  if (!tallaSeleccionada) {
+    alert("❌ Selecciona una talla primero.");
+    return;
+  }
+
+  if (!colorSeleccionado) {
+    alert("❌ Selecciona un color primero.");
+    return;
+  }
+
+  const user = firebase.auth().currentUser;
+  const isAuthenticated = !!user;
+
+  if (!isAuthenticated) {
+    alert("🔐 Debes iniciar sesión para agregar al carrito.");
+    showAuthModal('login');
+    return;
+  }
+
+  // Actualizar modal de confirmación con color
+  const colorTexto = {
+    'blanco': 'Blanco',
+    'negro': 'Negro',
+    'gris': 'Gris'
+  };
+  
+  document.getElementById('confirmColor').textContent = colorTexto[colorSeleccionado];
+  document.getElementById('confirmTalla').textContent = tallaSeleccionada;
+  document.getElementById('confirmProducto').textContent = 'Camisa Personalizada';
+
+  document.getElementById("miModal").style.display = "flex";
+}
+
+// Función para ir a upload (actualizada)
+function irUpload() {
+  if (!tallaSeleccionada || !colorSeleccionado) {
+    alert("Selecciona color y talla primero");
+    return;
+  }
+  
+  // Guardar selecciones en localStorage para la página de upload
+  localStorage.setItem('colorSeleccionado', colorSeleccionado);
+  localStorage.setItem('tallaSeleccionada', tallaSeleccionada);
+  
+  window.location.href = `upload.html?talla=${tallaSeleccionada}&color=${colorSeleccionado}`;
+}
+
+// El resto del código de Firebase se mantiene igual...
+async function initFirebase() {
   try {
     firebase.initializeApp(firebaseConfig);
     console.log('✅ Firebase inicializado');
@@ -19,7 +128,6 @@ function initFirebase() {
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {
         console.log('👤 Usuario autenticado:', user.email);
-        // Cargar datos adicionales del usuario
         cargarDatosUsuario(user.uid);
         updateAuthUI(true, user.email);
       } else {
@@ -34,7 +142,6 @@ function initFirebase() {
   }
 }
 
-// Cargar datos adicionales del usuario desde localStorage
 function cargarDatosUsuario(uid) {
   const userData = localStorage.getItem(`userData_${uid}`);
   if (userData) {
@@ -43,7 +150,6 @@ function cargarDatosUsuario(uid) {
   }
 }
 
-// Guardar datos adicionales del usuario
 function guardarDatosUsuario(uid, userData) {
   localStorage.setItem(`userData_${uid}`, JSON.stringify(userData));
   currentUserData = userData;
@@ -72,7 +178,6 @@ function updateAuthUI(isLoggedIn, userEmail = '') {
 function showAuthModal(mode) {
   authMode = mode;
   
-  // Actualizar título y texto del botón
   document.getElementById('authTitle').textContent = 
     mode === 'login' ? 'Iniciar Sesión' : 'Crear Cuenta';
   document.getElementById('authButtonText').textContent = 
@@ -80,11 +185,9 @@ function showAuthModal(mode) {
   document.getElementById('authSwitch').textContent = mode === 'login' ? 
     '¿No tienes cuenta? Regístrate aquí' : '¿Ya tienes cuenta? Inicia sesión aquí';
   
-  // Mostrar/ocultar campos según el modo
   document.getElementById('loginFields').style.display = mode === 'login' ? 'block' : 'none';
   document.getElementById('registerFields').style.display = mode === 'register' ? 'block' : 'none';
   
-  // Limpiar campos
   document.getElementById('authEmail').value = '';
   document.getElementById('authPassword').value = '';
   
@@ -104,11 +207,14 @@ function cerrarAuthModal() {
   document.getElementById('authModal').style.display = 'none';
 }
 
+function cerrarModal() {
+  document.getElementById("miModal").style.display = "none";
+}
+
 function toggleAuthMode() {
   showAuthModal(authMode === 'login' ? 'register' : 'login');
 }
 
-// Validar edad (mínimo 13 años)
 function validarEdad(fechaNacimiento) {
   const hoy = new Date();
   const nacimiento = new Date(fechaNacimiento);
@@ -122,9 +228,7 @@ function validarEdad(fechaNacimiento) {
   return edad >= 13;
 }
 
-// Validar teléfono mexicano
 function validarTelefono(telefono) {
-  // Formato mexicano: 10 dígitos, puede empezar con +52
   const regex = /^(\+52\s?)?(\d{10})$/;
   return regex.test(telefono.replace(/\s/g, ''));
 }
@@ -132,7 +236,6 @@ function validarTelefono(telefono) {
 async function procesarAuth() {
   try {
     if (authMode === 'register') {
-      // VALIDACIONES PARA REGISTRO
       const nombre = document.getElementById('authNombre').value;
       const email = document.getElementById('authEmailRegistro').value;
       const telefono = document.getElementById('authTelefono').value;
@@ -140,41 +243,34 @@ async function procesarAuth() {
       const fechaNacimiento = document.getElementById('authFechaNacimiento').value;
       const password = document.getElementById('authPasswordRegistro').value;
 
-      // Validar campos vacíos
       if (!nombre || !email || !telefono || !direccion || !fechaNacimiento || !password) {
         alert('❌ Por favor completa todos los campos');
         return;
       }
 
-      // Validar email
       if (!email.includes('@')) {
         alert('❌ Por favor ingresa un email válido');
         return;
       }
 
-      // Validar teléfono
       if (!validarTelefono(telefono)) {
         alert('❌ Por favor ingresa un número de teléfono válido (10 dígitos)');
         return;
       }
 
-      // Validar edad mínima
       if (!validarEdad(fechaNacimiento)) {
         alert('❌ Debes tener al menos 13 años para registrarte');
         return;
       }
 
-      // Validar contraseña
       if (password.length < 6) {
         alert('❌ La contraseña debe tener al menos 6 caracteres');
         return;
       }
 
-      // Crear usuario en Firebase
       const userCredential = await firebase.auth().createUserWithEmailAndPassword(email, password);
       const user = userCredential.user;
 
-      // Guardar datos adicionales del usuario
       const userData = {
         nombre: nombre,
         telefono: telefono,
@@ -189,7 +285,6 @@ async function procesarAuth() {
       cerrarAuthModal();
 
     } else {
-      // LOGIN
       const email = document.getElementById('authEmail').value;
       const password = document.getElementById('authPassword').value;
 
@@ -207,7 +302,6 @@ async function procesarAuth() {
     console.error('❌ Error auth:', error);
     let errorMessage = 'Error: ' + error.message;
     
-    // Mensajes de error más amigables
     switch (error.code) {
       case 'auth/email-already-in-use':
         errorMessage = 'Este email ya está registrado';
@@ -241,47 +335,6 @@ async function logout() {
   } catch (error) {
     console.error('Error logout:', error);
   }
-}
-
-// Funciones del carrito
-function seleccionarTalla(talla) {
-  tallaSeleccionada = talla;
-  document.getElementById("tallaSeleccionada").textContent = talla;
-  
-  document.querySelectorAll('.tallas button').forEach(btn => {
-    btn.classList.remove('seleccionada');
-  });
-  event.target.classList.add('seleccionada');
-}
-
-async function agregarCarrito() {
-  if (!tallaSeleccionada) {
-    alert("❌ Selecciona una talla primero.");
-    return;
-  }
-
-  const user = firebase.auth().currentUser;
-  const isAuthenticated = !!user;
-
-  if (!isAuthenticated) {
-    alert("🔐 Debes iniciar sesión para agregar al carrito.");
-    showAuthModal('login');
-    return;
-  }
-
-  document.getElementById("miModal").style.display = "flex";
-}
-
-function cerrarModal() {
-  document.getElementById("miModal").style.display = "none";
-}
-
-function irUpload() {
-  if (!tallaSeleccionada) {
-    alert("Selecciona una talla primero");
-    return;
-  }
-  window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
 
 // Inicializar

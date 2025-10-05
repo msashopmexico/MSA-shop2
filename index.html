@@ -37,6 +37,40 @@
       color: #bbb;
       margin-top: 5px;
     }
+    /* Estilos para colores */
+    .colores {
+      margin: 15px 0;
+      text-align: center;
+    }
+    .colores h3 {
+      color: #fff;
+      margin-bottom: 10px;
+    }
+    .color-option {
+      display: inline-block;
+      width: 40px;
+      height: 40px;
+      margin: 5px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.3s ease;
+    }
+    .color-option:hover {
+      transform: scale(1.1);
+    }
+    .color-option.seleccionada {
+      border-color: #fff;
+      box-shadow: 0 0 10px rgba(255,255,255,0.8);
+    }
+    .color-blanco { background-color: #ffffff; }
+    .color-negro { background-color: #000000; }
+    .color-gris { background-color: #808080; }
+    .color-nombre {
+      font-size: 12px;
+      color: #fff;
+      margin-top: 5px;
+    }
   </style>
 </head>
 <body>
@@ -51,15 +85,30 @@
 
   <main>
     <section class="producto">
-      <img src="img/camisetaLisaNegra.png" alt="Camiseta Lisa Negra" class="producto-img">
+      <img src="img/camisetaLisaNegra.png" alt="Camisa Personalizada" class="producto-img" id="productoImg">
       <div class="producto-info">
-        <h2>Camiseta Lisa Negra</h2>
+        <h2 id="productoNombre">Camisa Personalizada</h2>
         <p>$250 MXN</p>
+        
+        <!-- Selector de Colores -->
+        <div class="colores">
+          <h3>🎨 Elige el color:</h3>
+          <div>
+            <div class="color-option color-blanco seleccionada" onclick="seleccionarColor('blanco')" title="Blanco"></div>
+            <div class="color-option color-negro" onclick="seleccionarColor('negro')" title="Negro"></div>
+            <div class="color-option color-gris" onclick="seleccionarColor('gris')" title="Gris"></div>
+          </div>
+          <div class="color-nombre" id="colorSeleccionadoTexto">Color: Blanco</div>
+        </div>
+
+        <!-- Selector de Tallas -->
         <div class="tallas">
+          <h3>📏 Elige la talla:</h3>
           <button onclick="seleccionarTalla('S')">S</button>
           <button onclick="seleccionarTalla('M')">M</button>
           <button onclick="seleccionarTalla('L')">L</button>
         </div>
+
         <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
       </div>
     </section>
@@ -70,7 +119,9 @@
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarModal()">&times;</span>
       <h2>Confirma tu compra</h2>
-      <p>Seleccionaste la camiseta en talla: <span id="tallaSeleccionada">Ninguna</span></p>
+      <p><strong>Producto:</strong> <span id="confirmProducto">Camisa Personalizada</span></p>
+      <p><strong>Color:</strong> <span id="confirmColor">Blanco</span></p>
+      <p><strong>Talla:</strong> <span id="confirmTalla">Ninguna</span></p>
       <button class="comprar-btn" onclick="irUpload()">Sube tu diseño</button>
     </div>
   </div>
@@ -125,20 +176,11 @@
   </div>
 
   <!-- Panda decorativo -->
-  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
+  <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()" title="¡Haz clic para volver al inicio! 🏠">
 
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="main.js"></script>
-  <!-- Panda decorativo -->
-<img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()">
-
-<script>
-// Función para volver al inicio
-function volverAlInicio() {
-    window.location.href = 'index.html';
-}
-</script>
 </body>
 </html>
