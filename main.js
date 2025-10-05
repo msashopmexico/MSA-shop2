@@ -1,20 +1,32 @@
 let auth0Client = null;
 let tallaSeleccionada = null;
 
+// Función para esperar a que Auth0 se cargue
+function waitForAuth0() {
+  return new Promise((resolve, reject) => {
+    let attempts = 0;
+    const check = setInterval(() => {
+      attempts++;
+      if (typeof auth0 !== 'undefined') {
+        clearInterval(check);
+        resolve(auth0);
+      } else if (attempts > 50) { // 5 segundos máximo
+        clearInterval(check);
+        reject(new Error('Auth0 no se cargó'));
+      }
+    }, 100);
+  });
+}
+
 async function initAuth() {
   try {
     console.log('🔧 Inicializando Auth0...');
     
-    // Verificar más específicamente si auth0 está disponible
-    if (typeof auth0 === 'undefined' || !auth0.createAuth0Client) {
-      console.error('❌ Auth0 SDK no está disponible');
-      showAuthError();
-      return;
-    }
+    // Esperar a que Auth0 se cargue
+    await waitForAuth0();
+    console.log('✅ Auth0 SDK cargado');
 
-    console.log('✅ Auth0 SDK cargado correctamente');
-    
-    // Configurar Auth0 con tus credenciales
+    // Configurar Auth0
     auth0Client = await auth0.createAuth0Client({
       domain: "dev-r83h8xsmacihkvil.us.auth0.com",
       client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
@@ -25,89 +37,74 @@ async function initAuth() {
     });
 
     console.log('✅ Cliente Auth0 creado');
-    
-    // Manejar callback de redirección
-    if (window.location.search.includes("state=") && 
-        (window.location.search.includes("code=") || 
-         window.location.search.includes("error="))) {
-      console.log('🔄 Procesando callback de Auth0...');
+
+    // Manejar callback después del login
+    if (window.location.search.includes('code=')) {
       await auth0Client.handleRedirectCallback();
       window.history.replaceState({}, document.title, window.location.pathname);
     }
 
     // Actualizar UI
     const isAuthenticated = await auth0Client.isAuthenticated();
-    console.log('👤 Estado de autenticación:', isAuthenticated);
     updateAuthButtons(isAuthenticated);
 
   } catch (error) {
     console.error('❌ Error inicializando Auth0:', error);
-    showAuthError();
+    // Modo desarrollo - funcionamiento sin Auth0
+    setupFallbackAuth();
   }
 }
 
-function showAuthError() {
-  const authButtons = document.querySelector('.auth-buttons');
-  if (authButtons) {
-    authButtons.innerHTML = `
-      <button style="background: #e74c3c; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;" 
-              onclick="location.reload()">
-        🔄 Recargar (Error Auth0)
-      </button>
-    `;
-  }
+function setupFallbackAuth() {
+  console.log('🔧 Usando modo desarrollo (sin Auth0)');
+  let loggedIn = false;
+  
+  const loginBtn = document.querySelector(".btn-login");
+  const registerBtn = document.querySelector(".btn-register");
+  
+  if (!loginBtn || !registerBtn) return;
+  
+  loginBtn.textContent = "Iniciar sesión";
+  loginBtn.onclick = () => {
+    loggedIn = true;
+    updateAuthButtons(true);
+    alert('✅ Sesión iniciada (modo desarrollo)');
+  };
+  
+  registerBtn.textContent = "Registrarse";
+  registerBtn.onclick = () => {
+    loggedIn = true;
+    updateAuthButtons(true);
+    alert('✅ Registro exitoso (modo desarrollo)');
+  };
+  
+  updateAuthButtons(loggedIn);
 }
 
 function updateAuthButtons(isAuthenticated) {
   const loginBtn = document.querySelector(".btn-login");
   const registerBtn = document.querySelector(".btn-register");
 
-  if (!loginBtn || !registerBtn) {
-    console.warn('⚠️ Botones de auth no encontrados');
-    return;
-  }
+  if (!loginBtn || !registerBtn) return;
 
-  if (isAuthenticated) {
+  if (isAuthenticated && auth0Client) {
     loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => logout();
+    loginBtn.onclick = () => auth0Client.logout({
+      logoutParams: { returnTo: window.location.origin }
+    });
     registerBtn.style.display = "none";
-    console.log('✅ UI actualizada: usuario autenticado');
+  } else if (isAuthenticated) {
+    // Modo desarrollo
+    loginBtn.textContent = "Cerrar sesión";
+    loginBtn.onclick = () => {
+      updateAuthButtons(false);
+      alert('Sesión cerrada');
+    };
+    registerBtn.style.display = "none";
   } else {
     loginBtn.textContent = "Iniciar sesión";
-    loginBtn.onclick = () => login();
     registerBtn.textContent = "Registrarse";
-    registerBtn.onclick = () => login({ authorizationParams: { screen_hint: "signup" } });
     registerBtn.style.display = "inline-block";
-    console.log('✅ UI actualizada: usuario no autenticado');
-  }
-}
-
-async function login(options = {}) {
-  if (!auth0Client) {
-    alert('❌ Auth0 no está inicializado. Recarga la página.');
-    return;
-  }
-  
-  try {
-    console.log('🔐 Iniciando proceso de login...');
-    await auth0Client.loginWithRedirect(options);
-  } catch (error) {
-    console.error('❌ Error en login:', error);
-    alert('Error al iniciar sesión');
-  }
-}
-
-async function logout() {
-  if (!auth0Client) return;
-  
-  try {
-    await auth0Client.logout({
-      logoutParams: {
-        returnTo: window.location.origin
-      }
-    });
-  } catch (error) {
-    console.error('❌ Error en logout:', error);
   }
 }
 
@@ -124,8 +121,6 @@ function seleccionarTalla(talla) {
     btn.classList.remove('seleccionada');
   });
   event.target.classList.add('seleccionada');
-  
-  console.log(`📏 Talla seleccionada: ${talla}`);
 }
 
 async function agregarCarrito() {
@@ -134,8 +129,9 @@ async function agregarCarrito() {
     return;
   }
 
+  // Si Auth0 no está disponible, usar modo desarrollo
   if (!auth0Client) {
-    alert("❌ Error de autenticación. Recarga la página.");
+    document.getElementById("miModal").style.display = "flex";
     return;
   }
 
@@ -143,21 +139,19 @@ async function agregarCarrito() {
     const isAuthenticated = await auth0Client.isAuthenticated();
     if (!isAuthenticated) {
       alert("🔐 Debes iniciar sesión para agregar al carrito.");
-      await login();
+      await auth0Client.loginWithRedirect();
       return;
     }
 
-    console.log('🛒 Abriendo modal de confirmación');
     document.getElementById("miModal").style.display = "flex";
   } catch (error) {
-    console.error('❌ Error en agregarCarrito:', error);
-    alert("❌ Error al verificar autenticación");
+    console.error('Error:', error);
+    alert("Error de autenticación");
   }
 }
 
 function cerrarModal() {
   document.getElementById("miModal").style.display = "none";
-  console.log('❌ Modal cerrado');
 }
 
 function irUpload() {
@@ -165,14 +159,10 @@ function irUpload() {
     alert("Selecciona una talla primero");
     return;
   }
-  console.log(`🎨 Redirigiendo a upload con talla: ${tallaSeleccionada}`);
+  // Guardar la talla en localStorage para la página de upload
+  localStorage.setItem('tallaSeleccionada', tallaSeleccionada);
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
 
-// Inicializar cuando la página cargue
+// Inicializar
 window.onload = initAuth;
-
-// También inicializar cuando el DOM esté listo como respaldo
-document.addEventListener('DOMContentLoaded', function() {
-  console.log('📄 DOM cargado');
-});

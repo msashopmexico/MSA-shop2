@@ -12,7 +12,7 @@
     <div class="auth-buttons">
       <button class="btn-login">Iniciar sesión</button>
       <button class="btn-register">Registrarse</button>
-      <button class="btn-carrito">🛒 Carrito</button>
+      <button class="btn-carrito" onclick="window.location.href='carrito.html'">🛒 Carrito</button>
     </div>
   </header>
 
@@ -45,9 +45,8 @@
   <!-- Panda decorativo -->
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-  <!-- Auth0 SDK -->
-  <!-- En lugar del CDN, usar archivo local -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/auth0-spa-js/2.5.0/auth0-spa-js.production.min.js"></script>
-<script src="main.js"></script>
+  <!-- AUTH0 SDK - URL CORREGIDA -->
+  <script src="https://cdn.auth0.com/js/auth0-spa-js/2.1.2/auth0-spa-js.production.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>

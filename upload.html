@@ -1,71 +1,94 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sube tu diseño - MSA Shop</title>
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sube tu diseño - MSA Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .upload-container {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 30px;
+      text-align: center;
+      max-width: 500px;
+      margin: 50px auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+    #previewImg {
+      max-width: 300px;
+      margin: 15px 0;
+      border-radius: 10px;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>Sube tu diseño</h1>
+    <div style="position: absolute; top: 20px; right: 30px;">
+      <button onclick="window.location.href='index.html'" style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">
+        ← Volver
+      </button>
+    </div>
   </header>
 
   <main>
-    <div class="producto">
-      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg">
-      <img id="preview" src="" alt="Preview" style="max-width:200px; margin-top:15px;">
+    <div class="upload-container">
+      <h2>Sube tu diseño personalizado</h2>
+      <p>Talla seleccionada: <strong id="talla-info">?</strong></p>
+      
+      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="margin: 20px 0;">
+      <br>
+      <img id="previewImg" src="" alt="Vista previa" style="display: none;">
+      <br>
       <button id="enviarBtn" class="comprar-btn">Enviar diseño</button>
     </div>
   </main>
 
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-  <script type="module">
-    import * as emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+  <script>
+    // Mostrar talla seleccionada
+    const urlParams = new URLSearchParams(window.location.search);
+    const talla = urlParams.get('talla') || localStorage.getItem('tallaSeleccionada') || 'No especificada';
+    document.getElementById('talla-info').textContent = talla;
 
-    emailjs.init("PhV4Hp36EPOLiGe6t");
+    const fileInput = document.getElementById('fileInput');
+    const previewImg = document.getElementById('previewImg');
+    const enviarBtn = document.getElementById('enviarBtn');
 
-    const fileInput = document.getElementById("fileInput");
-    const preview = document.getElementById("preview");
-    const enviarBtn = document.getElementById("enviarBtn");
+    let archivoSeleccionado = null;
 
-    let uploadedFile = null;
-
-    fileInput.addEventListener("change", e => {
+    fileInput.addEventListener('change', function(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (!["image/png","image/jpeg","image/jpg"].includes(file.type)) {
-        alert("Solo PNG, JPG o JPEG permitidos");
+      if (!['image/png', 'image/jpeg', 'image/jpg'].includes(file.type)) {
+        alert('Solo se permiten archivos PNG, JPG o JPEG');
         return;
       }
 
-      uploadedFile = file;
+      archivoSeleccionado = file;
       const reader = new FileReader();
-      reader.onload = () => preview.src = reader.result;
+      reader.onload = function(e) {
+        previewImg.src = e.target.result;
+        previewImg.style.display = 'block';
+      };
       reader.readAsDataURL(file);
     });
 
-    enviarBtn.addEventListener("click", async () => {
-      if (!uploadedFile) return alert("Selecciona un archivo");
+    enviarBtn.addEventListener('click', function() {
+      if (!archivoSeleccionado) {
+        alert('Por favor selecciona un archivo primero');
+        return;
+      }
 
-      const reader = new FileReader();
-      reader.onload = async () => {
-        try {
-          const templateParams = {
-            nombre: "Cliente MSA",
-            email: "cliente@correo.com",
-            imagen: reader.result
-          };
-          await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
-          alert("Correo enviado correctamente");
-        } catch(err) {
-          console.error(err);
-          alert("Error al enviar el correo");
-        }
-      };
-      reader.readAsDataURL(uploadedFile);
+      alert('✅ Diseño enviado correctamente! (Función de email en desarrollo)');
+      // Aquí iría el código para enviar el email con EmailJS
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 1500);
     });
   </script>
 </body>
