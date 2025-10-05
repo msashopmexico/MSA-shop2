@@ -27,14 +27,6 @@
           <p><strong>Precio:</strong> $250 MXN</p>
         </div>
 
-        <!-- Panel de información de configuración -->
-        <div style="background: rgba(255,255,255,0.05); padding: 15px; border-radius: 10px; margin: 15px 0; font-size: 12px; color: #f39c12;">
-          <strong>🔧 Configuración Cloudinary:</strong><br>
-          Cloud Name: <span id="cloudNameStatus" style="color: #2ecc71;">dnzcup3ze ✅</span><br>
-          Upload Preset: <span id="presetStatus" style="color: #2ecc71;">image_design ✅</span><br>
-          <small>Si hay error 401, verifica que el preset "image_design" exista y sea "unsigned"</small>
-        </div>
-
         <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 2px dashed #3498db; background: rgba(255,255,255,0.1); color: white;">
         
         <div id="fileInfo" style="color: #f39c12; margin: 10px 0;"></div>
@@ -52,19 +44,6 @@
         </div>
 
         <div id="errorMessage" style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #e74c3c; display: none;">
-        </div>
-
-        <!-- Instrucciones para solucionar el error 401 -->
-        <div id="solucion401" style="background: rgba(243, 156, 18, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; display: none;">
-          <strong>🛠️ Para solucionar el error 401:</strong>
-          <ol style="text-align: left; font-size: 12px; margin: 10px 0;">
-            <li>Ve a <a href="https://cloudinary.com/console" target="_blank" style="color: #3498db;">Cloudinary Console</a></li>
-            <li>Settings → Upload → Upload presets</li>
-            <li>Busca el preset "image_design"</li>
-            <li>Si no existe, crea uno nuevo con ese nombre</li>
-            <li>Configura: <strong>Signing Mode = Unsigned</strong></li>
-            <li>Guarda y prueba de nuevo</li>
-          </ol>
         </div>
       </div>
     </div>
@@ -123,7 +102,6 @@
     const fileInfo = document.getElementById('fileInfo');
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
-    const solucion401 = document.getElementById('solucion401');
     const tallaInfo = document.getElementById('talla-info');
 
     let archivoSeleccionado = null;
@@ -244,7 +222,6 @@
       enviarBtn.textContent = 'Subiendo imagen...';
       enviarBtn.disabled = true;
       errorMessage.style.display = 'none';
-      solucion401.style.display = 'none';
 
       try {
         // 1. Subir imagen a Cloudinary
@@ -303,8 +280,7 @@ ${cloudinaryUrl}`
         let mensajeError = error.message;
         
         if (error.message.includes('401')) {
-          mensajeError = 'Error 401: El Upload Preset "image_design" no existe o no está configurado como "unsigned".';
-          solucion401.style.display = 'block';
+          mensajeError = 'Error 401: El Upload Preset "image_design" no existe o no está configurado como "unsigned". Ve a Cloudinary Console para verificarlo.';
         }
         
         errorMessage.textContent = mensajeError;
@@ -320,10 +296,6 @@ ${cloudinaryUrl}`
     document.addEventListener('DOMContentLoaded', function() {
       mostrarInfoPedido();
       cargarDatosUsuario();
-      console.log('🔧 Configuración Cloudinary:', {
-        cloudName: CLOUDINARY_CLOUD_NAME,
-        uploadPreset: CLOUDINARY_UPLOAD_PRESET
-      });
     });
   </script>
 </body>
