@@ -25,58 +25,22 @@
     <button id="btn-enviar" class="agregar">Enviar diseño</button>
   </div>
 
-  <script type="module">
-    import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
-    emailjs.init("PhV4Hp36EPOLiGe6t");
+  <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
+<script>
+  let auth0Client;
 
-    const input = document.getElementById("imagen");
-    const preview = document.getElementById("preview");
-    let base64File = "";
-
-    input.addEventListener("change", () => {
-      const file = input.files[0];
-      if (!file) return;
-      const ext = file.name.split('.').pop().toLowerCase();
-      if (!['png','jpg','jpeg'].includes(ext)) {
-        alert("Formato no permitido");
-        return;
-      }
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        base64File = e.target.result;
-        preview.src = base64File;
-        preview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-    });
-
-    document.getElementById("btn-enviar").addEventListener("click", async () => {
-      const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      const total = carrito.reduce((acc,p)=>acc+p.precio,0);
-      const productos = carrito.map(p=>`${p.nombre} - Talla: ${p.talla}`).join("\n");
-
-      try {
-        await emailjs.send("service_4450mrz", "template_biyacaa", {
-          nombre: "Cliente",
-          email: "cliente@example.com",
-          productos,
-          total,
-          imagen: base64File,
-          fecha: new Date().toLocaleDateString(),
-          direccion: "N/A",
-          ciudad: "N/A",
-          codigo_postal: "N/A",
-          telefono: "N/A"
-        });
-        alert("✅ Diseño enviado correctamente. Revisa tu correo.");
-        localStorage.removeItem("carrito");
-        window.location.href = "index.html";
-      } catch (err) {
-        console.error(err);
-        alert("❌ Error al enviar el diseño.");
+  async function initAuth() {
+    auth0Client = await createAuth0Client({
+      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
+      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
+      authorizationParams: {
+        redirect_uri: "https://msa-shop.netlify.app/"
       }
     });
-  </script>
+  }
+
+  window.onload = initAuth;
+</script>
+
 </body>
 </html>

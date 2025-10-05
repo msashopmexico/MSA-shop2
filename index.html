@@ -41,6 +41,22 @@
   </div>
 </div>
 
-<script type="module" src="main.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
+<script>
+  let auth0Client;
+
+  async function initAuth() {
+    auth0Client = await createAuth0Client({
+      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
+      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
+      authorizationParams: {
+        redirect_uri: "https://msa-shop.netlify.app/"
+      }
+    });
+  }
+
+  window.onload = initAuth;
+</script>
+
 </body>
 </html>

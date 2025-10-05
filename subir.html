@@ -19,33 +19,22 @@
     <button class="btn" style="margin-top:20px;">Confirmar Pedido</button>
   </div>
 
-  <script>
-    const dropzone = document.getElementById("dropzone");
+  <script src="https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2.1.0/dist/auth0-spa-js.production.js"></script>
+<script>
+  let auth0Client;
 
-    dropzone.addEventListener("click", () => {
-      const input = document.createElement("input");
-      input.type = "file";
-      input.accept = "image/*";
-      input.click();
-    });
-
-    dropzone.addEventListener("dragover", (e) => {
-      e.preventDefault();
-      dropzone.classList.add("dragover");
-    });
-
-    dropzone.addEventListener("dragleave", () => {
-      dropzone.classList.remove("dragover");
-    });
-
-    dropzone.addEventListener("drop", (e) => {
-      e.preventDefault();
-      dropzone.classList.remove("dragover");
-      const file = e.dataTransfer.files[0];
-      if (file) {
-        dropzone.textContent = `✅ Archivo cargado: ${file.name}`;
+  async function initAuth() {
+    auth0Client = await createAuth0Client({
+      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
+      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
+      authorizationParams: {
+        redirect_uri: "https://msa-shop.netlify.app/"
       }
     });
-  </script>
+  }
+
+  window.onload = initAuth;
+</script>
+
 </body>
 </html>
