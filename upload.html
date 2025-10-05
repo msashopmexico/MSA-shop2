@@ -1,31 +1,72 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sube tu diseño - MSA Shop</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sube tu diseño - MSA Shop</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
     <h1>Sube tu diseño</h1>
-    <div class="auth-buttons">
-      <button id="btn-logout" class="btn-logout">Cerrar Sesión</button>
-    </div>
   </header>
 
   <main>
-    <div class="upload-container">
-      <input type="file" id="fileInput" accept="image/png, image/jpg, image/jpeg">
-      <div id="previewContainer">
-        <img id="previewImage" src="" alt="Vista previa" style="display:none; max-width:300px;">
-      </div>
-      <button id="btn-send" class="comprar-btn">Enviar diseño</button>
+    <div class="producto">
+      <input type="file" id="fileInput" accept=".png,.jpg,.jpeg">
+      <img id="preview" src="" alt="Preview" style="max-width:200px; margin-top:15px;">
+      <button id="enviarBtn" class="comprar-btn">Enviar diseño</button>
     </div>
   </main>
 
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-  <script type="module" src="main.js"></script>
+  <script type="module">
+    import * as emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+
+    emailjs.init("PhV4Hp36EPOLiGe6t");
+
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    const enviarBtn = document.getElementById("enviarBtn");
+
+    let uploadedFile = null;
+
+    fileInput.addEventListener("change", e => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (!["image/png","image/jpeg","image/jpg"].includes(file.type)) {
+        alert("Solo PNG, JPG o JPEG permitidos");
+        return;
+      }
+
+      uploadedFile = file;
+      const reader = new FileReader();
+      reader.onload = () => preview.src = reader.result;
+      reader.readAsDataURL(file);
+    });
+
+    enviarBtn.addEventListener("click", async () => {
+      if (!uploadedFile) return alert("Selecciona un archivo");
+
+      const reader = new FileReader();
+      reader.onload = async () => {
+        try {
+          const templateParams = {
+            nombre: "Cliente MSA",
+            email: "cliente@correo.com",
+            imagen: reader.result
+          };
+          await emailjs.send("service_4450mrz", "template_biyacaa", templateParams);
+          alert("Correo enviado correctamente");
+        } catch(err) {
+          console.error(err);
+          alert("Error al enviar el correo");
+        }
+      };
+      reader.readAsDataURL(uploadedFile);
+    });
+  </script>
 </body>
 </html>

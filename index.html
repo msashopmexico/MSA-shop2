@@ -11,7 +11,7 @@
     <h1>MSA Shop</h1>
     <div class="auth-buttons">
       <button id="btn-login" class="btn-login">Iniciar Sesión</button>
-      <button id="btn-register" class="btn-register">Registrarse</button>
+      <button id="btn-logout" class="btn-logout" style="display:none;">Cerrar Sesión</button>
     </div>
   </header>
 
@@ -28,11 +28,12 @@
           <button onclick="seleccionarTalla('L')">L</button>
         </div>
 
-        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al Carrito</button>
+        <button class="comprar-btn" onclick="agregarCarrito()">Agregar al carrito</button>
       </div>
     </section>
   </main>
 
+  <!-- Panda decorativo -->
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
   <script type="module" src="main.js"></script>

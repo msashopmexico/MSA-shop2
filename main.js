@@ -1,77 +1,66 @@
-import createAuth0Client from "https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2/dist/auth0-spa-js.production.js";
-import emailjs from "https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js";
+import { createAuth0Client } from "https://cdn.jsdelivr.net/npm/@auth0/auth0-spa-js@2/dist/auth0-spa-js.production.esm.js";
 
 let auth0 = null;
-let user = null;
-let carrito = [];
+let tallaSeleccionada = null;
 
+// Inicializar Auth0
 async function initAuth() {
   auth0 = await createAuth0Client({
     domain: "dev-r83h8xsmacihkvil.us.auth0.com",
     client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
     cacheLocation: "localstorage",
+    redirect_uri: window.location.origin
   });
 
-  if(await auth0.isAuthenticated()) {
-    user = await auth0.getUser();
+  // Detectar login
+  const isAuthenticated = await auth0.isAuthenticated();
+  toggleAuthButtons(isAuthenticated);
+
+  // Manejo de callback
+  const query = window.location.search;
+  if (query.includes("code=") && query.includes("state=")) {
+    await auth0.handleRedirectCallback();
+    window.history.replaceState({}, document.title, "/");
+    toggleAuthButtons(true);
   }
 }
 
-document.getElementById("btn-login")?.addEventListener("click", async()=>{
-  await auth0.loginWithRedirect({ redirect_uri: window.location.origin });
-});
-document.getElementById("btn-register")?.addEventListener("click", async()=>{
-  await auth0.loginWithRedirect({ redirect_uri: window.location.origin });
-});
-document.getElementById("btn-logout")?.addEventListener("click", async()=>{
-  await auth0.logout({ returnTo: window.location.origin });
-});
-
-function seleccionarTalla(talla) {
-  localStorage.setItem("tallaSeleccionada", talla);
+function toggleAuthButtons(loggedIn) {
+  document.getElementById("btn-login").style.display = loggedIn ? "none" : "inline-block";
+  document.getElementById("btn-logout").style.display = loggedIn ? "inline-block" : "none";
 }
 
-function agregarCarrito() {
-  const talla = localStorage.getItem("tallaSeleccionada");
-  if(!talla) return alert("Selecciona una talla primero");
-  carrito.push({ producto:"Camiseta Lisa Negra", precio:250, talla });
-  localStorage.setItem("carrito", JSON.stringify(carrito));
-  window.location.href = "upload.html";
-}
+// Botones login/logout
+document.getElementById("btn-login").addEventListener("click", async () => {
+  await auth0.loginWithRedirect();
+});
 
-// Upload.html
-const fileInput = document.getElementById("fileInput");
-const previewImage = document.getElementById("previewImage");
-const btnSend = document.getElementById("btn-send");
+document.getElementById("btn-logout").addEventListener("click", () => {
+  auth0.logout({ returnTo: window.location.origin });
+});
 
-fileInput?.addEventListener("change", ()=>{
-  const file = fileInput.files[0];
-  if(!file) return;
-  if(!["image/png","image/jpeg","image/jpg"].includes(file.type)) {
-    alert("Solo PNG, JPG o JPEG");
-    fileInput.value="";
+// Selección de talla
+window.seleccionarTalla = function(talla) {
+  tallaSeleccionada = talla;
+  alert("Talla seleccionada: " + talla);
+};
+
+// Agregar al carrito (solo si está logueado)
+window.agregarCarrito = async function() {
+  if (!await auth0.isAuthenticated()) {
+    alert("Debes iniciar sesión para agregar al carrito");
     return;
   }
-  const reader = new FileReader();
-  reader.onload = e=>{
-    previewImage.src = e.target.result;
-    previewImage.style.display="block";
-  };
-  reader.readAsDataURL(file);
-});
-
-btnSend?.addEventListener("click", async()=>{
-  const file = fileInput.files[0];
-  if(!file) return alert("Sube una imagen primero");
-  try{
-    await emailjs.send("service_4450mrz","template_biyacaa",{
-      nombre: user.name || "Cliente",
-      email: user.email,
-      diseño: previewImage.src,
-    },"PhV4Hp36EPOLiGe6t");
-    alert("Correo enviado con éxito!");
-  }catch(e){
-    console.error(e);
-    alert("Error enviando correo");
+  if (!tallaSeleccionada) {
+    alert("Selecciona una talla antes de agregar al carrito");
+    return;
   }
-});
+
+  let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+  carrito.push({ producto: "Camiseta Lisa Negra", precio: 250, talla: tallaSeleccionada });
+  localStorage.setItem("carrito", JSON.stringify(carrito));
+  alert("Producto agregado al carrito. Ahora sube tu diseño.");
+  window.location.href = "upload.html";
+};
+
+initAuth();
