@@ -1,82 +1,62 @@
 let auth0Client = null;
 let tallaSeleccionada = null;
 
-// Función para esperar a que Auth0 se cargue
-function waitForAuth0() {
-  return new Promise((resolve, reject) => {
-    let attempts = 0;
-    const check = setInterval(() => {
-      attempts++;
-      if (typeof auth0 !== 'undefined') {
-        clearInterval(check);
-        resolve(auth0);
-      } else if (attempts > 50) { // 5 segundos máximo
-        clearInterval(check);
-        reject(new Error('Auth0 no se cargó'));
-      }
-    }, 100);
-  });
-}
-
 async function initAuth() {
   try {
     console.log('🔧 Inicializando Auth0...');
     
     // Esperar a que Auth0 se cargue
-    await waitForAuth0();
-    console.log('✅ Auth0 SDK cargado');
+    if (typeof auth0 === 'undefined') {
+      console.error('Auth0 no disponible');
+      setupFallbackAuth();
+      return;
+    }
 
-    // Configurar Auth0
+    // Configurar Auth0 para Netlify
     auth0Client = await auth0.createAuth0Client({
       domain: "dev-r83h8xsmacihkvil.us.auth0.com",
       client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
       cacheLocation: "localstorage",
       authorizationParams: {
-        redirect_uri: window.location.origin
+        redirect_uri: "https://msa-shop.netlify.app"
       }
     });
 
     console.log('✅ Cliente Auth0 creado');
 
-    // Manejar callback después del login
+    // MANEJO MEJORADO del callback después del login
     if (window.location.search.includes('code=')) {
-      await auth0Client.handleRedirectCallback();
-      window.history.replaceState({}, document.title, window.location.pathname);
+      console.log('🔄 Detectado callback de Auth0, procesando...');
+      try {
+        const { appState } = await auth0Client.handleRedirectCallback();
+        console.log('✅ Login exitoso, redirigiendo...');
+        
+        // Limpiar URL
+        window.history.replaceState({}, document.title, "/");
+        
+        // Redirigir a página principal
+        window.location.href = "https://msa-shop.netlify.app";
+        
+      } catch (error) {
+        console.error('Error en callback:', error);
+      }
+      return;
     }
 
-    // Actualizar UI
+    // Verificar si ya está autenticado
     const isAuthenticated = await auth0Client.isAuthenticated();
+    console.log('👤 Usuario autenticado:', isAuthenticated);
     updateAuthButtons(isAuthenticated);
 
   } catch (error) {
     console.error('❌ Error inicializando Auth0:', error);
-    // Modo desarrollo - funcionamiento sin Auth0
     setupFallbackAuth();
   }
 }
 
 function setupFallbackAuth() {
-  console.log('🔧 Usando modo desarrollo (sin Auth0)');
-  let loggedIn = false;
-  
-  const loginBtn = document.querySelector(".btn-login");
-  const registerBtn = document.querySelector(".btn-register");
-  
-  if (!loginBtn || !registerBtn) return;
-  
-  loginBtn.textContent = "Iniciar sesión";
-  loginBtn.onclick = () => {
-    loggedIn = true;
-    updateAuthButtons(true);
-    alert('✅ Sesión iniciada (modo desarrollo)');
-  };
-  
-  registerBtn.textContent = "Registrarse";
-  registerBtn.onclick = () => {
-    loggedIn = true;
-    updateAuthButtons(true);
-    alert('✅ Registro exitoso (modo desarrollo)');
-  };
+  console.log('🔧 Usando modo desarrollo');
+  let loggedIn = localStorage.getItem('dev_logged_in') === 'true';
   
   updateAuthButtons(loggedIn);
 }
@@ -87,28 +67,72 @@ function updateAuthButtons(isAuthenticated) {
 
   if (!loginBtn || !registerBtn) return;
 
-  if (isAuthenticated && auth0Client) {
-    loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => auth0Client.logout({
-      logoutParams: { returnTo: window.location.origin }
-    });
-    registerBtn.style.display = "none";
-  } else if (isAuthenticated) {
-    // Modo desarrollo
-    loginBtn.textContent = "Cerrar sesión";
-    loginBtn.onclick = () => {
-      updateAuthButtons(false);
-      alert('Sesión cerrada');
-    };
+  if (isAuthenticated) {
+    if (auth0Client) {
+      // Modo Auth0 real
+      loginBtn.textContent = "Cerrar sesión";
+      loginBtn.onclick = () => auth0Client.logout({
+        logoutParams: { 
+          returnTo: "https://msa-shop.netlify.app" 
+        }
+      });
+    } else {
+      // Modo desarrollo
+      loginBtn.textContent = "Cerrar sesión";
+      loginBtn.onclick = () => {
+        localStorage.setItem('dev_logged_in', 'false');
+        updateAuthButtons(false);
+        alert('Sesión cerrada');
+      };
+    }
     registerBtn.style.display = "none";
   } else {
-    loginBtn.textContent = "Iniciar sesión";
-    registerBtn.textContent = "Registrarse";
+    if (auth0Client) {
+      // Modo Auth0 real
+      loginBtn.textContent = "Iniciar sesión";
+      loginBtn.onclick = () => login();
+      registerBtn.textContent = "Registrarse";
+      registerBtn.onclick = () => login({ 
+        authorizationParams: { screen_hint: "signup" } 
+      });
+    } else {
+      // Modo desarrollo
+      loginBtn.textContent = "Iniciar sesión";
+      loginBtn.onclick = () => {
+        localStorage.setItem('dev_logged_in', 'true');
+        updateAuthButtons(true);
+        alert('✅ Sesión iniciada (modo desarrollo)');
+      };
+      registerBtn.textContent = "Registrarse";
+      registerBtn.onclick = () => {
+        localStorage.setItem('dev_logged_in', 'true');
+        updateAuthButtons(true);
+        alert('✅ Registro exitoso (modo desarrollo)');
+      };
+    }
     registerBtn.style.display = "inline-block";
   }
 }
 
-// Funciones del carrito
+async function login(options = {}) {
+  if (!auth0Client) {
+    alert('Auth0 no disponible');
+    return;
+  }
+  
+  try {
+    await auth0Client.loginWithRedirect({
+      authorizationParams: {
+        redirect_uri: "https://msa-shop.netlify.app",
+        ...options.authorizationParams
+      }
+    });
+  } catch (error) {
+    console.error('Error en login:', error);
+  }
+}
+
+// Funciones del carrito (sin cambios)
 function seleccionarTalla(talla) {
   tallaSeleccionada = talla;
   const tallaElement = document.getElementById("tallaSeleccionada");
@@ -116,7 +140,6 @@ function seleccionarTalla(talla) {
     tallaElement.textContent = talla;
   }
   
-  // Resaltar botón seleccionado
   document.querySelectorAll('.tallas button').forEach(btn => {
     btn.classList.remove('seleccionada');
   });
@@ -129,25 +152,33 @@ async function agregarCarrito() {
     return;
   }
 
-  // Si Auth0 no está disponible, usar modo desarrollo
-  if (!auth0Client) {
-    document.getElementById("miModal").style.display = "flex";
+  // Verificar autenticación
+  let isAuthenticated = false;
+  
+  if (auth0Client) {
+    try {
+      isAuthenticated = await auth0Client.isAuthenticated();
+    } catch (error) {
+      console.error('Error verificando auth:', error);
+    }
+  } else {
+    // Modo desarrollo
+    isAuthenticated = localStorage.getItem('dev_logged_in') === 'true';
+  }
+
+  if (!isAuthenticated) {
+    alert("🔐 Debes iniciar sesión para agregar al carrito.");
+    if (auth0Client) {
+      await login();
+    } else {
+      // En modo desarrollo, simular login
+      localStorage.setItem('dev_logged_in', 'true');
+      updateAuthButtons(true);
+    }
     return;
   }
 
-  try {
-    const isAuthenticated = await auth0Client.isAuthenticated();
-    if (!isAuthenticated) {
-      alert("🔐 Debes iniciar sesión para agregar al carrito.");
-      await auth0Client.loginWithRedirect();
-      return;
-    }
-
-    document.getElementById("miModal").style.display = "flex";
-  } catch (error) {
-    console.error('Error:', error);
-    alert("Error de autenticación");
-  }
+  document.getElementById("miModal").style.display = "flex";
 }
 
 function cerrarModal() {
@@ -159,7 +190,6 @@ function irUpload() {
     alert("Selecciona una talla primero");
     return;
   }
-  // Guardar la talla en localStorage para la página de upload
   localStorage.setItem('tallaSeleccionada', tallaSeleccionada);
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
