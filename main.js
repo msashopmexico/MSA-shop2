@@ -2,22 +2,33 @@ let auth0Client = null;
 let tallaSeleccionada = null;
 
 async function initAuth() {
-  // Crea el cliente Auth0 usando el objeto global "auth0"
-  auth0Client = await auth0.createAuth0Client({
-    domain: "dev-r83h8xsmacihkvil.us.auth0.com",
-    client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
-    cacheLocation: "localstorage",
-    redirect_uri: window.location.origin
-  });
-
-  // Maneja callback de redirección
-  if (window.location.search.includes("code=")) {
-    await auth0Client.handleRedirectCallback();
-    window.history.replaceState({}, document.title, "/");
+  // VERIFICAR que auth0 está disponible antes de usarlo
+  if (typeof auth0 === 'undefined') {
+    console.error('Auth0 SDK no cargado. Reintentando...');
+    setTimeout(initAuth, 100); // Reintentar después de 100ms
+    return;
   }
 
-  const logged = await auth0Client.isAuthenticated();
-  updateAuthButtons(logged);
+  try {
+    // Crea el cliente Auth0 usando el objeto global "auth0"
+    auth0Client = await auth0.createAuth0Client({
+      domain: "dev-r83h8xsmacihkvil.us.auth0.com",
+      client_id: "PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf",
+      cacheLocation: "localstorage",
+      redirect_uri: window.location.origin
+    });
+
+    // Maneja callback de redirección
+    if (window.location.search.includes("code=")) {
+      await auth0Client.handleRedirectCallback();
+      window.history.replaceState({}, document.title, "/");
+    }
+
+    const logged = await auth0Client.isAuthenticated();
+    updateAuthButtons(logged);
+  } catch (error) {
+    console.error('Error inicializando Auth0:', error);
+  }
 }
 
 function updateAuthButtons(logged) {
@@ -44,12 +55,23 @@ function seleccionarTalla(talla) {
 }
 
 async function agregarCarrito() {
+  // VERIFICAR que auth0Client existe antes de usarlo
+  if (!auth0Client) {
+    alert("Sistema de autenticación no disponible. Por favor recarga la página.");
+    return;
+  }
+
   if (!tallaSeleccionada) return alert("Selecciona una talla primero.");
 
-  const logged = await auth0Client.isAuthenticated();
-  if (!logged) return alert("Debes iniciar sesión para agregar al carrito.");
+  try {
+    const logged = await auth0Client.isAuthenticated();
+    if (!logged) return alert("Debes iniciar sesión para agregar al carrito.");
 
-  document.getElementById("miModal").style.display = "flex";
+    document.getElementById("miModal").style.display = "flex";
+  } catch (error) {
+    console.error('Error verificando autenticación:', error);
+    alert("Error al verificar autenticación");
+  }
 }
 
 function cerrarModal() {
@@ -60,4 +82,5 @@ function irUpload() {
   window.location.href = "upload.html?talla=" + tallaSeleccionada;
 }
 
+// Inicializar cuando la página cargue
 window.onload = initAuth;
