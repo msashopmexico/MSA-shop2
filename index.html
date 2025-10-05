@@ -42,23 +42,24 @@
     </div>
   </div>
 
-  <!-- Modal Login/Registro -->
+  <!-- Modal Auth -->
   <div id="authModal" class="modal">
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarAuthModal()">&times;</span>
       <h2 id="authTitle">Iniciar Sesión</h2>
-      <input type="email" id="authEmail" placeholder="📧 Email" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd;">
-      <input type="password" id="authPassword" placeholder="🔒 Contraseña" style="width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ddd;">
-      <button class="comprar-btn" onclick="procesarAuth()" style="width: 100%;">Continuar</button>
-      <p id="authSwitch" style="margin-top: 15px; cursor: pointer; color: #3498db;" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+      <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input">
+      <input type="password" id="authPassword" placeholder="🔒 Contraseña" class="auth-input">
+      <button class="comprar-btn" onclick="procesarAuth()">Continuar</button>
+      <p id="authSwitch" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
     </div>
   </div>
 
   <!-- Panda decorativo -->
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion">
 
-  <!-- AppWrite SDK -->
-  <script src="https://cdn.jsdelivr.net/npm/appwrite@10.0.0"></script>
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script src="main.js"></script>
 </body>
 </html>
