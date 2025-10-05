@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Subir Diseño - MSA Shop México</title>
+  <title>Subir diseño - MSA Shop</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header>
-    <h1>MSA Shop México</h1>
+    <h1>Sube tu diseño</h1>
     <div class="header-buttons">
       <button onclick="window.location.href='index.html'">Inicio</button>
       <button onclick="window.location.href='carrito.html'">🛒 Carrito</button>
@@ -17,59 +17,69 @@
 
   <div class="container">
     <div class="upload-box">
-      <h2>Sube tu diseño</h2>
-      <input type="file" id="file-input" accept=".png,.jpg,.jpeg">
-      <div id="preview-container">
-        <img id="preview" src="" alt="Preview" style="display:none; max-width:300px; margin-top:20px;">
-      </div>
-      <button id="btn-enviar">Enviar pedido</button>
+      <h2>Arrastra o selecciona tu imagen (png, jpg, jpeg)</h2>
+      <input type="file" id="fileInput" accept="image/png, image/jpeg, image/jpg">
+      <div id="previewContainer" style="margin-top:20px;"></div>
+      <button id="btnEnviar">Enviar pedido</button>
+      <p id="mensaje" style="color:green;"></p>
     </div>
   </div>
 
-  <div class="panda-bg"></div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4.8.0/dist/email.min.js"></script>
-  <script>
+  <script type="module">
+    import emailjs from 'https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js';
     emailjs.init('PhV4Hp36EPOLiGe6t');
-    const preview = document.getElementById("preview");
-    const fileInput = document.getElementById("file-input");
-    let fileBase64 = "";
 
-    fileInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
+    const fileInput = document.getElementById("fileInput");
+    const previewContainer = document.getElementById("previewContainer");
+    const btnEnviar = document.getElementById("btnEnviar");
+    const mensaje = document.getElementById("mensaje");
+
+    let uploadedFile = null;
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
       if (!file) return;
-      if (!['image/png','image/jpeg','image/jpg'].includes(file.type)) {
-        alert("Solo se permiten PNG, JPG o JPEG");
+      const validTypes = ["image/png","image/jpeg","image/jpg"];
+      if (!validTypes.includes(file.type)) {
+        alert("Solo se permiten archivos PNG o JPG/JPEG");
         fileInput.value = "";
         return;
       }
+      uploadedFile = file;
       const reader = new FileReader();
-      reader.onload = () => {
-        preview.src = reader.result;
-        preview.style.display = "block";
-        fileBase64 = reader.result;
-      };
+      reader.onload = (e) => {
+        previewContainer.innerHTML = `<img src="${e.target.result}" style="max-width:300px;border-radius:12px;">`;
+      }
       reader.readAsDataURL(file);
     });
 
-    document.getElementById("btn-enviar").addEventListener("click", async () => {
-      if (!fileBase64) return alert("Debes seleccionar un diseño primero");
+    btnEnviar.addEventListener("click", async () => {
+      if (!uploadedFile) {
+        alert("Debes seleccionar una imagen");
+        return;
+      }
+
+      // Obtener carrito
       const carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      const productos = carrito.map(p=>`${p.nombre} - Talla: ${p.talla}`).join("\n");
+      const productos = carrito.map(p => `${p.nombre} - Talla: ${p.talla}`).join(", ");
       const total = carrito.reduce((acc,p)=>acc+p.precio,0);
 
+      const formData = new FormData();
+      formData.append("imagen", uploadedFile);
+
       try {
-        await emailjs.send('service_4450mrz','template_biyacaa',{
-          nombre: 'Cliente MSA',
-          email: 'cliente@msa.com',
-          productos: productos,
-          total: `$${total}`,
-          imagen: fileBase64
+        await emailjs.send('service_4450mrz', 'template_biyacaa', {
+          nombre: "Cliente MSA",
+          email: "cliente@example.com",
+          productos,
+          total,
+          linkImagen: "Imagen subida (se adjunta en correo o usar link de almacenamiento)"
         });
-        alert("✅ Pedido enviado correctamente");
-      } catch (err) {
+        mensaje.textContent = "✅ Pedido enviado correctamente!";
+        localStorage.removeItem("carrito");
+      } catch(err){
         console.error(err);
-        alert("❌ Error al enviar el pedido");
+        mensaje.textContent = "❌ Error al enviar el pedido";
       }
     });
   </script>

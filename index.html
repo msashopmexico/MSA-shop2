@@ -41,19 +41,12 @@
     </div>
   </div>
 
-  <!-- Panda en la esquina -->
-  <div class="panda-bg"></div>
-
-  <!-- Auth0 SPA JS -->
   <script src="https://cdn.auth0.com/js/auth0-spa-js/1.26/auth0-spa-js.production.js"></script>
-
-  <script>
-    // ==== Variables globales ====
+  <script type="module">
     let auth0 = null;
     let productoSeleccionado = { nombre: "Camiseta Custom", precio: 300 };
 
-    // ==== Funciones Auth0 ====
-    window.onload = async () => {
+    async function initAuth() {
       auth0 = await window.createAuth0Client({
         domain: 'dev-r83h8xsmacihkvil.us.auth0.com',
         client_id: 'PBGnUOmoUjfuTJwwpW6bHIQDSSDGPjQf',
@@ -62,14 +55,11 @@
 
       const isAuthenticated = await auth0.isAuthenticated();
 
-      if (isAuthenticated) {
-        document.getElementById("btn-login").style.display = "none";
-        document.getElementById("btn-logout").style.display = "inline-block";
-      } else {
-        document.getElementById("btn-login").style.display = "inline-block";
-        document.getElementById("btn-logout").style.display = "none";
-      }
-    };
+      document.getElementById("btn-login").style.display = isAuthenticated ? "none" : "inline-block";
+      document.getElementById("btn-logout").style.display = isAuthenticated ? "inline-block" : "none";
+    }
+
+    window.onload = initAuth;
 
     document.getElementById("btn-login").addEventListener("click", async () => {
       await auth0.loginWithRedirect({ redirect_uri: window.location.href });
@@ -80,6 +70,19 @@
     });
 
     // ==== Funciones Carrito ====
+    function seleccionarTalla(talla) {
+      productoSeleccionado.talla = talla;
+      let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
+      carrito.push(productoSeleccionado);
+      localStorage.setItem("carrito", JSON.stringify(carrito));
+      document.getElementById("modal-talla").style.display = "none";
+      window.location.href = "upload.html";
+    }
+
+    function cerrarModal() {
+      document.getElementById("modal-talla").style.display = "none";
+    }
+
     document.getElementById("btn-agregar").addEventListener("click", async () => {
       const isAuthenticated = await auth0.isAuthenticated();
       if (!isAuthenticated) {
@@ -88,19 +91,6 @@
       }
       document.getElementById("modal-talla").style.display = "flex";
     });
-
-    function seleccionarTalla(talla) {
-      productoSeleccionado.talla = talla;
-      let carrito = JSON.parse(localStorage.getItem("carrito")) || [];
-      carrito.push(productoSeleccionado);
-      localStorage.setItem("carrito", JSON.stringify(carrito));
-      document.getElementById("modal-talla").style.display = "none";
-      window.location.href = "upload.html"; // Ir a subir imagen
-    }
-
-    function cerrarModal() {
-      document.getElementById("modal-talla").style.display = "none";
-    }
   </script>
 </body>
 </html>
