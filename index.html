@@ -5,111 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MSA Shop</title>
   <link rel="stylesheet" href="style.css">
-  <style>
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.8);
-    }
-
-    .modal-contenido {
-      background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-      margin: auto;
-      padding: 30px;
-      border-radius: 15px;
-      width: 90%;
-      max-width: 400px;
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      box-shadow: 0 8px 32px rgba(255, 0, 0, 0.3);
-      border: 2px solid #ff0000;
-    }
-
-    .cerrar {
-      color: #ff0000;
-      float: right;
-      font-size: 28px;
-      font-weight: bold;
-      cursor: pointer;
-      line-height: 1;
-    }
-
-    .cerrar:hover {
-      color: #ffd700;
-      text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    }
-
-    .auth-input {
-      width: 100%;
-      padding: 12px;
-      margin: 8px 0;
-      border: 2px solid #ff0000;
-      border-radius: 8px;
-      background: rgba(255, 255, 255, 0.1);
-      color: white;
-      font-size: 14px;
-      box-sizing: border-box;
-    }
-
-    .auth-input::placeholder {
-      color: #cccccc;
-    }
-
-    .auth-input:focus {
-      outline: none;
-      border-color: #ffd700;
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
-    }
-
-    #authSwitch {
-      text-align: center;
-      margin-top: 15px;
-      color: #ffd700;
-      cursor: pointer;
-      text-decoration: underline;
-    }
-
-    #authSwitch:hover {
-      color: #ff0000;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .user-welcome {
-      color: #ffd700;
-      font-weight: bold;
-      text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
-    }
-
-    .btn-logout {
-      background: #333333;
-      color: white;
-      padding: 8px 15px;
-      border: 2px solid #ff0000;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: all 0.3s;
-    }
-
-    .btn-logout:hover {
-      background: #ff0000;
-      transform: translateY(-2px);
-      box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
-    }
-  </style>
 </head>
 <body>
   <header>
@@ -145,19 +40,21 @@
     </section>
   </main>
 
+  <!-- Modal de Confirmación -->
   <div id="miModal" class="modal">
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarModal()">&times;</span>
-      <h2 style="color: #ffd700; text-align: center;">Confirma tu compra</h2>
-      <p style="text-align: center; margin: 20px 0;">Seleccionaste la camisa en talla: <span id="tallaSeleccionada" style="color: #ffd700; font-weight: bold;">Ninguna</span></p>
+      <h2>Confirma tu compra</h2>
+      <p>Seleccionaste la camisa en talla: <span id="tallaSeleccionada">Ninguna</span></p>
       <button class="comprar-btn" onclick="irUpload()">Sube tu diseño</button>
     </div>
   </div>
 
+  <!-- Modal Auth -->
   <div id="authModal" class="modal">
     <div class="modal-contenido">
       <span class="cerrar" onclick="cerrarAuthModal()">&times;</span>
-      <h2 id="authTitle" style="color: #ffd700; text-align: center;">Iniciar Sesión</h2>
+      <h2 id="authTitle">Iniciar Sesión</h2>
       
       <div id="loginFields">
         <input type="email" id="authEmail" placeholder="📧 Email" class="auth-input">
@@ -171,109 +68,79 @@
         <input type="tel" id="authTelefono" placeholder="📞 Número de teléfono" class="auth-input">
         <input type="text" id="authDireccion" placeholder="🏠 Dirección completa" class="auth-input">
         <input type="date" id="authFechaNacimiento" class="auth-input">
-        <small style="color: #ffd700; display: block; margin-bottom: 10px; text-align: center;">Debes tener al menos 13 años</small>
+        <small style="color: #7f8c8d; display: block; margin-bottom: 10px; text-align: center;">Debes tener al menos 13 años</small>
       </div>
       
       <button class="comprar-btn" onclick="procesarAuth()">Continuar</button>
-      <p id="authSwitch" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
+      <p class="auth-switch" onclick="toggleAuthMode()">¿No tienes cuenta? Regístrate aquí</p>
     </div>
   </div>
 
   <img src="img/panda.png" alt="Panda MSA" class="panda-decoracion" onclick="volverAlInicio()" title="¡Haz clic para volver al inicio! 🏠">
 
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.0/firebase-auth-compat.js"></script>
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyAbyiT01b_KFXhHuAY00aWybmYVEhuHvsY",
-      authDomain: "msa-web-8517b.firebaseapp.com",
-      projectId: "msa-web-8517b",
-      storageBucket: "msa-web-8517b.firebasestorage.app",
-      messagingSenderId: "607379403409",
-      appId: "1:607379403409:web:tu-app-id-aqui"
-    };
-
-    let app;
-    let auth;
-    try {
-      app = firebase.initializeApp(firebaseConfig);
-      auth = firebase.auth();
-      console.log('✅ Firebase inicializado');
-    } catch (error) {
-      console.error('❌ Error Firebase:', error);
-    }
-
+    // Configuración
     let isLoginMode = true;
     let tallaSeleccionada = '';
 
-    function actualizarUIUsuario(user) {
+    // Funciones de UI
+    function actualizarUIUsuario() {
       const noAuthState = document.getElementById('noAuthState');
       const authState = document.getElementById('authState');
       const userWelcome = document.getElementById('userWelcome');
+      const userData = obtenerDatosUsuario();
 
-      if (user) {
+      if (userData) {
         noAuthState.style.display = 'none';
         authState.style.display = 'block';
-        const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-        const nombreUsuario = userData.nombre || user.email || 'Usuario';
+        const nombreUsuario = userData.nombre || userData.email || 'Usuario';
         userWelcome.textContent = `¡Hola, ${nombreUsuario}!`;
-        console.log('✅ Usuario autenticado detectado');
       } else {
         noAuthState.style.display = 'block';
         authState.style.display = 'none';
-        console.log('🔒 Usuario no autenticado');
       }
     }
 
-    async function cerrarSesion() {
+    function obtenerDatosUsuario() {
       try {
-        if (auth) {
-          await auth.signOut();
-          localStorage.removeItem('userData');
-          alert('¡Sesión cerrada!');
-          actualizarUIUsuario(null);
-        }
+        const userData = localStorage.getItem('userData');
+        return userData ? JSON.parse(userData) : null;
       } catch (error) {
-        console.error('Error al cerrar sesión:', error);
-        alert('Error al cerrar sesión: ' + error.message);
+        console.error('Error obteniendo datos:', error);
+        return null;
       }
     }
 
+    function guardarDatosUsuario(userData) {
+      localStorage.setItem('userData', JSON.stringify(userData));
+    }
+
+    // Funciones de tallas
     function seleccionarTalla(talla) {
       tallaSeleccionada = talla;
       localStorage.setItem('tallaSeleccionada', talla);
+      
+      // Actualizar UI de tallas
       document.querySelectorAll('.tallas button').forEach(btn => {
         btn.classList.remove('seleccionada');
       });
       event.target.classList.add('seleccionada');
     }
 
+    // Funciones de compra
     function comprarAhora() {
       if (!tallaSeleccionada) {
         alert('Por favor selecciona una talla');
         return;
       }
       
-      if (!auth) {
-        alert('Error de configuración. Recarga la página.');
-        return;
-      }
-      
-      const user = auth.currentUser;
-      if (user) {
+      const userData = obtenerDatosUsuario();
+      if (userData) {
         document.getElementById('tallaSeleccionada').textContent = tallaSeleccionada;
         document.getElementById('miModal').style.display = 'block';
       } else {
         document.getElementById('authModal').style.display = 'block';
       }
-    }
-
-    function cerrarModal() {
-      document.getElementById('miModal').style.display = 'none';
-    }
-
-    function cerrarAuthModal() {
-      document.getElementById('authModal').style.display = 'none';
     }
 
     function irUpload() {
@@ -282,16 +149,26 @@
       }
     }
 
+    // Funciones de modales
+    function cerrarModal() {
+      document.getElementById('miModal').style.display = 'none';
+    }
+
+    function cerrarAuthModal() {
+      document.getElementById('authModal').style.display = 'none';
+    }
+
     function volverAlInicio() {
       window.location.href = 'index.html';
     }
 
+    // Funciones de autenticación
     function toggleAuthMode() {
       isLoginMode = !isLoginMode;
       const authTitle = document.getElementById('authTitle');
       const loginFields = document.getElementById('loginFields');
       const registerFields = document.getElementById('registerFields');
-      const authSwitch = document.getElementById('authSwitch');
+      const authSwitch = document.querySelector('.auth-switch');
 
       if (isLoginMode) {
         authTitle.textContent = 'Iniciar Sesión';
@@ -311,7 +188,7 @@
       const authTitle = document.getElementById('authTitle');
       const loginFields = document.getElementById('loginFields');
       const registerFields = document.getElementById('registerFields');
-      const authSwitch = document.getElementById('authSwitch');
+      const authSwitch = document.querySelector('.auth-switch');
 
       if (esLogin) {
         authTitle.textContent = 'Iniciar Sesión';
@@ -326,12 +203,7 @@
       }
     }
 
-    async function procesarAuth() {
-      if (!auth) {
-        alert('Error de configuración. Recarga la página.');
-        return;
-      }
-
+    function procesarAuth() {
       let email, password;
 
       if (isLoginMode) {
@@ -349,9 +221,18 @@
 
       try {
         if (isLoginMode) {
-          await auth.signInWithEmailAndPassword(email, password);
+          // Simular login exitoso
+          const userData = {
+            nombre: 'Usuario Demo',
+            email: email,
+            telefono: '1234567890',
+            direccion: 'Dirección demo',
+            fechaNacimiento: '2000-01-01'
+          };
+          guardarDatosUsuario(userData);
           alert('¡Bienvenido de nuevo!');
         } else {
+          // Registro
           const nombre = document.getElementById('authNombre').value;
           const telefono = document.getElementById('authTelefono').value;
           const direccion = document.getElementById('authDireccion').value;
@@ -362,6 +243,7 @@
             return;
           }
 
+          // Verificar edad (al menos 13 años)
           const fechaNac = new Date(fechaNacimiento);
           const hoy = new Date();
           const edad = hoy.getFullYear() - fechaNac.getFullYear();
@@ -372,23 +254,21 @@
             return;
           }
 
-          const userCredential = await auth.createUserWithEmailAndPassword(email, password);
-          const user = userCredential.user;
-
           const userData = {
             nombre: nombre,
             email: email,
             telefono: telefono,
             direccion: direccion,
-            fechaNacimiento: fechaNacimiento,
-            uid: user.uid
+            fechaNacimiento: fechaNacimiento
           };
 
-          localStorage.setItem('userData', JSON.stringify(userData));
+          guardarDatosUsuario(userData);
           alert('¡Registro exitoso! Bienvenido a MSA Shop');
         }
 
         cerrarAuthModal();
+        actualizarUIUsuario();
+        
         if (tallaSeleccionada) {
           document.getElementById('tallaSeleccionada').textContent = tallaSeleccionada;
           document.getElementById('miModal').style.display = 'block';
@@ -396,33 +276,19 @@
 
       } catch (error) {
         console.error('Error de autenticación:', error);
-        let mensajeError = 'Error: ';
-        
-        switch (error.code) {
-          case 'auth/email-already-in-use':
-            mensajeError += 'Este email ya está registrado';
-            break;
-          case 'auth/invalid-email':
-            mensajeError += 'Email inválido';
-            break;
-          case 'auth/weak-password':
-            mensajeError += 'La contraseña es muy débil (mínimo 6 caracteres)';
-            break;
-          case 'auth/user-not-found':
-            mensajeError += 'Usuario no encontrado';
-            break;
-          case 'auth/wrong-password':
-            mensajeError += 'Contraseña incorrecta';
-            break;
-          default:
-            mensajeError += error.message;
-        }
-        
-        alert(mensajeError);
+        alert('Error: ' + error.message);
       }
     }
 
+    function cerrarSesion() {
+      localStorage.removeItem('userData');
+      actualizarUIUsuario();
+      alert('¡Sesión cerrada!');
+    }
+
+    // Inicialización
     document.addEventListener('DOMContentLoaded', function() {
+      // Event listeners para botones de auth
       document.querySelector('.btn-login').addEventListener('click', function() {
         mostrarFormularioAuth(true);
         document.getElementById('authModal').style.display = 'block';
@@ -433,12 +299,10 @@
         document.getElementById('authModal').style.display = 'block';
       });
 
-      if (auth) {
-        auth.onAuthStateChanged((user) => {
-          actualizarUIUsuario(user);
-        });
-      }
+      // Cargar estado inicial
+      actualizarUIUsuario();
 
+      // Cargar talla seleccionada si existe
       const tallaGuardada = localStorage.getItem('tallaSeleccionada');
       if (tallaGuardada) {
         tallaSeleccionada = tallaGuardada;
@@ -450,6 +314,7 @@
       }
     });
 
+    // Cerrar modales al hacer clic fuera
     window.onclick = function(event) {
       const miModal = document.getElementById('miModal');
       const authModal = document.getElementById('authModal');
