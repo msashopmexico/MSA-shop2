@@ -6,24 +6,26 @@
 
 body {
   font-family: 'Arial', sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #2d2d2d 100%);
   color: white;
   min-height: 100vh;
 }
 
 header {
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(0, 0, 0, 0.8);
   padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
   backdrop-filter: blur(10px);
-  border-bottom: 2px solid #3498db;
+  border-bottom: 3px solid #ff0000;
+  box-shadow: 0 2px 20px rgba(255, 0, 0, 0.3);
 }
 
 h1 {
-  color: #3498db;
+  color: #ff0000;
   font-size: 2rem;
+  text-shadow: 0 0 10px rgba(255, 0, 0, 0.5);
 }
 
 .auth-buttons {
@@ -33,17 +35,21 @@ h1 {
 }
 
 .btn-login, .btn-register {
-  background: #3498db;
+  background: #ff0000;
   color: white;
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: none;
-  border-radius: 5px;
+  border-radius: 8px;
   cursor: pointer;
-  transition: background 0.3s;
+  transition: all 0.3s;
+  font-weight: bold;
+  border: 2px solid transparent;
 }
 
 .btn-login:hover, .btn-register:hover {
-  background: #2980b9;
+  background: #cc0000;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
 }
 
 main {
@@ -56,11 +62,12 @@ main {
   display: flex;
   gap: 3rem;
   align-items: center;
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.1);
   padding: 2rem;
   border-radius: 15px;
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 2px solid #ff0000;
+  box-shadow: 0 8px 32px rgba(255, 0, 0, 0.2);
 }
 
 .producto-img {
@@ -68,7 +75,7 @@ main {
   height: 300px;
   object-fit: cover;
   border-radius: 10px;
-  border: 3px solid #3498db;
+  border: 3px solid #ff0000;
 }
 
 .producto-info {
@@ -76,16 +83,18 @@ main {
 }
 
 .producto-info h2 {
-  color: #3498db;
+  color: #ff0000;
   margin-bottom: 1rem;
   font-size: 1.8rem;
+  text-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
 }
 
 .producto-info p {
   font-size: 1.4rem;
-  color: #f39c12;
+  color: #ffd700;
   margin-bottom: 1.5rem;
   font-weight: bold;
+  text-shadow: 0 0 5px rgba(255, 215, 0, 0.3);
 }
 
 .tallas {
@@ -95,29 +104,34 @@ main {
 }
 
 .tallas button {
-  background: #34495e;
+  background: #333333;
   color: white;
-  border: 2px solid transparent;
-  padding: 10px 20px;
+  border: 2px solid #666666;
+  padding: 12px 24px;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s;
   font-weight: bold;
+  font-size: 1rem;
 }
 
 .tallas button:hover {
-  background: #3498db;
+  background: #ff0000;
+  border-color: #ff0000;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
 }
 
 .tallas button.seleccionada {
-  background: #2ecc71;
-  border-color: #27ae60;
+  background: #ffd700;
+  border-color: #ffd700;
+  color: #000000;
   transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 215, 0, 0.4);
 }
 
 .comprar-btn {
-  background: #e74c3c;
+  background: #ff0000;
   color: white;
   padding: 15px 30px;
   border: none;
@@ -127,32 +141,66 @@ main {
   font-weight: bold;
   transition: all 0.3s;
   width: 100%;
+  border: 2px solid transparent;
 }
 
 .comprar-btn:hover {
-  background: #c0392b;
+  background: #cc0000;
   transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(231, 76, 60, 0.4);
+  box-shadow: 0 8px 25px rgba(255, 0, 0, 0.4);
 }
 
 .panda-decoracion {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  width: 100px;
-  height: auto;
+  width: 80px;
+  height: 80px;
   cursor: pointer;
-  transition: transform 0.3s;
+  transition: all 0.3s;
+  border-radius: 50%;
+  opacity: 0.8;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
 }
 
 .panda-decoracion:hover {
-  transform: scale(1.1);
+  transform: scale(1.2);
+  opacity: 1;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
 }
 
+/* Estilos para móvil */
 @media (max-width: 768px) {
+  body {
+    padding: 0;
+  }
+  
+  header {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+  
+  .auth-buttons {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  main {
+    padding: 1rem;
+  }
+  
   .producto {
     flex-direction: column;
     text-align: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
   }
   
   .producto-img {
@@ -162,11 +210,43 @@ main {
   
   .tallas {
     justify-content: center;
+    flex-wrap: wrap;
   }
   
-  header {
-    flex-direction: column;
-    gap: 1rem;
-    text-align: center;
+  .tallas button {
+    padding: 10px 20px;
+    font-size: 0.9rem;
+  }
+  
+  .comprar-btn {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+  
+  .panda-decoracion {
+    width: 60px;
+    height: 60px;
+    bottom: 15px;
+    right: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .producto-img {
+    width: 200px;
+    height: 200px;
+  }
+  
+  .producto-info h2 {
+    font-size: 1.4rem;
+  }
+  
+  .producto-info p {
+    font-size: 1.2rem;
+  }
+  
+  .tallas button {
+    padding: 8px 16px;
+    font-size: 0.8rem;
   }
 }

@@ -5,51 +5,116 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sube tu diseño - MSA Shop</title>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .upload-container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    .file-upload {
+      border: 3px dashed #ff0000;
+      border-radius: 15px;
+      padding: 30px;
+      text-align: center;
+      background: rgba(255, 0, 0, 0.1);
+      margin: 20px 0;
+      transition: all 0.3s;
+    }
+    
+    .file-upload:hover {
+      background: rgba(255, 0, 0, 0.2);
+      border-color: #ffd700;
+    }
+    
+    .preview-container {
+      margin: 20px 0;
+      text-align: center;
+    }
+    
+    .preview-img {
+      max-width: 100%;
+      max-height: 300px;
+      border-radius: 10px;
+      border: 3px solid #ffd700;
+      box-shadow: 0 5px 20px rgba(255, 215, 0, 0.3);
+    }
+    
+    .success-message {
+      background: rgba(255, 215, 0, 0.2);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px solid #ffd700;
+      text-align: center;
+    }
+    
+    .error-message {
+      background: rgba(255, 0, 0, 0.2);
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px solid #ff0000;
+      text-align: center;
+    }
+    
+    .no-auth-message {
+      background: rgba(255, 215, 0, 0.2);
+      padding: 30px;
+      border-radius: 15px;
+      margin: 20px 0;
+      border: 2px solid #ffd700;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
   <header>
     <h1>Sube tu diseño</h1>
-    <div style="position: absolute; top: 20px; right: 30px;">
-      <button onclick="volverAlInicio()" style="background: #3498db; color: white; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer;">
-        ← Volver al Inicio
-      </button>
+    <div class="auth-buttons">
+      <button class="btn-login" onclick="volverAlInicio()">← Volver al Inicio</button>
     </div>
   </header>
 
   <main>
-    <div class="producto">
+    <div class="upload-container">
       <div class="producto-info">
         <h2>Sube tu diseño personalizado</h2>
         
-        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0;">
+        <div style="background: rgba(255,255,255,0.1); padding: 20px; border-radius: 15px; margin: 20px 0; border: 2px solid #ff0000;">
           <p><strong>Producto:</strong> Camisa Personalizada</p>
-          <p><strong>Talla:</strong> <span id="talla-info">?</span></p>
-          <p><strong>Precio:</strong> $250 MXN</p>
+          <p><strong>Talla:</strong> <span id="talla-info" style="color: #ffd700;">?</span></p>
+          <p><strong>Precio:</strong> <span style="color: #ffd700;">$250 MXN</span></p>
         </div>
 
-        <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="width: 100%; padding: 12px; margin: 15px 0; border-radius: 8px; border: 2px dashed #3498db; background: rgba(255,255,255,0.1); color: white;">
-        
-        <div id="fileInfo" style="color: #f39c12; margin: 10px 0;"></div>
-        
-        <div id="previewContainer" style="display: none; text-align: center;">
-          <img id="previewImg" src="" alt="Vista previa" style="max-width: 300px; border-radius: 10px; margin: 10px 0;">
-        </div>
-        
-        <button id="enviarBtn" class="comprar-btn" style="margin-top: 20px; width: 100%;">
-          Enviar diseño y confirmar pedido
-        </button>
-
-        <div id="successMessage" style="background: rgba(46, 204, 113, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #2ecc71; display: none;">
-          ✅ ¡Pedido confirmado! Redirigiendo...
-        </div>
-
-        <div id="errorMessage" style="background: rgba(231, 76, 60, 0.2); padding: 15px; border-radius: 10px; margin: 15px 0; color: #e74c3c; display: none;">
+        <div id="uploadInterface">
+          <div class="file-upload">
+            <input type="file" id="fileInput" accept=".png,.jpg,.jpeg" style="width: 100%; padding: 15px; margin: 15px 0; border-radius: 8px; background: rgba(255,255,255,0.1); color: white; border: 2px solid #ff0000;">
+          </div>
+          
+          <div id="fileInfo" style="color: #ffd700; margin: 10px 0; text-align: center;"></div>
+          
+          <div id="previewContainer" class="preview-container" style="display: none;">
+            <img id="previewImg" src="" alt="Vista previa" class="preview-img">
+          </div>
+          
+          <button id="enviarBtn" class="comprar-btn">
+            Enviar diseño y confirmar pedido
+          </button>
         </div>
 
-        <div id="noAuthMessage" style="background: rgba(243, 156, 18, 0.2); padding: 20px; border-radius: 10px; margin: 15px 0; text-align: center; display: none;">
-          <h3 style="color: #f39c12; margin-bottom: 15px;">⚠️ Sesión no encontrada</h3>
-          <p style="margin-bottom: 15px;">Para subir un diseño necesitas iniciar sesión primero.</p>
-          <button onclick="volverAlInicio()" style="background: #f39c12; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">
+        <div id="successMessage" class="success-message" style="display: none;">
+          <h3 style="color: #ffd700;">✅ ¡Pedido confirmado!</h3>
+          <p>Redirigiendo a la página de confirmación...</p>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;">
+        </div>
+
+        <div id="noAuthMessage" class="no-auth-message" style="display: none;">
+          <h3 style="color: #ffd700;">⚠️ Sesión no encontrada</h3>
+          <p style="margin: 15px 0;">Para subir un diseño necesitas iniciar sesión primero.</p>
+          <button class="comprar-btn" onclick="volverAlInicio()">
             Ir a Iniciar Sesión
           </button>
         </div>
@@ -81,103 +146,42 @@
     try {
       firebaseApp = firebase.initializeApp(firebaseConfig);
       auth = firebase.auth();
-      console.log('✅ Firebase inicializado');
+      console.log('✅ Firebase inicializado en upload.html');
     } catch (error) {
-      console.log('ℹ️ Firebase ya inicializado o no disponible');
+      console.log('ℹ️ Firebase ya inicializado');
     }
 
     function volverAlInicio() {
       window.location.href = 'index.html';
     }
 
-    function obtenerDatosUsuario() {
-      try {
-        console.log('🔍 Buscando datos de usuario...');
-
+    // FUNCIÓN MEJORADA para detectar sesión
+    async function verificarSesionUsuario() {
+      return new Promise((resolve) => {
         if (auth) {
-          const currentUser = auth.currentUser;
-          if (currentUser) {
-            console.log('✅ Usuario encontrado en Firebase Auth:', currentUser);
-            return {
-              nombre: currentUser.displayName || 'Usuario',
-              email: currentUser.email || '',
-              telefono: currentUser.phoneNumber || '',
-              uid: currentUser.uid
-            };
-          }
-        }
-
-        let userData = localStorage.getItem('userData');
-        if (userData) {
-          console.log('✅ Datos encontrados en userData');
-          return JSON.parse(userData);
-        }
-
-        const keys = Object.keys(localStorage);
-        for (let key of keys) {
-          if (key.includes('user') || key.includes('auth') || key.includes('firebase')) {
-            try {
-              const data = localStorage.getItem(key);
-              try {
-                const parsed = JSON.parse(data);
-                if (parsed && (parsed.email || parsed.nombre || parsed.displayName)) {
-                  console.log('✅ Datos encontrados en clave:', key);
-                  return {
-                    nombre: parsed.displayName || parsed.nombre || 'Usuario',
-                    email: parsed.email || '',
-                    telefono: parsed.phoneNumber || parsed.telefono || '',
-                    uid: parsed.uid || ''
-                  };
-                }
-              } catch (e) {
-                if (data.includes('@') && data.includes('.')) {
-                  console.log('✅ Email encontrado en clave:', key);
-                  return {
-                    nombre: 'Usuario',
-                    email: data,
-                    telefono: '',
-                    uid: ''
-                  };
-                }
-              }
-            } catch (e) {
-              continue;
+          // Esperar a que Firebase Auth esté listo
+          const unsubscribe = auth.onAuthStateChanged((user) => {
+            unsubscribe();
+            if (user) {
+              console.log('✅ Sesión activa detectada en upload.html:', user.email);
+              resolve(user);
+            } else {
+              console.log('🔒 No hay sesión activa en upload.html');
+              resolve(null);
             }
+          });
+        } else {
+          // Fallback a localStorage si Firebase no está disponible
+          const userData = localStorage.getItem('userData');
+          if (userData) {
+            console.log('✅ Usuario encontrado en localStorage');
+            resolve(JSON.parse(userData));
+          } else {
+            console.log('🔒 No se encontró usuario en localStorage');
+            resolve(null);
           }
         }
-
-        userData = sessionStorage.getItem('userData');
-        if (userData) {
-          try {
-            const parsed = JSON.parse(userData);
-            if (parsed && (parsed.email || parsed.nombre)) {
-              console.log('✅ Datos encontrados en sessionStorage');
-              return parsed;
-            }
-          } catch (e) {
-            console.log('ℹ️ Datos en sessionStorage no son JSON válido');
-          }
-        }
-
-        const accessToken = localStorage.getItem('access_token') || 
-                           localStorage.getItem('firebase-access-token');
-        if (accessToken) {
-          console.log('✅ Token de acceso encontrado');
-          return {
-            nombre: 'Usuario Autenticado',
-            email: 'usuario@autenticado.com',
-            telefono: '',
-            uid: 'token-presente'
-          };
-        }
-
-        console.warn('❌ No se encontraron datos de usuario autenticado');
-        return null;
-
-      } catch (error) {
-        console.error('❌ Error obteniendo datos del usuario:', error);
-        return null;
-      }
+      });
     }
 
     const urlParams = new URLSearchParams(window.location.search);
@@ -191,6 +195,7 @@
     const successMessage = document.getElementById('successMessage');
     const errorMessage = document.getElementById('errorMessage');
     const noAuthMessage = document.getElementById('noAuthMessage');
+    const uploadInterface = document.getElementById('uploadInterface');
     const tallaInfo = document.getElementById('talla-info');
 
     let archivoSeleccionado = null;
@@ -201,18 +206,17 @@
     }
 
     async function cargarDatosUsuario() {
-      userData = await obtenerDatosUsuario();
+      console.log('🔍 Verificando sesión de usuario...');
+      const user = await verificarSesionUsuario();
       
-      if (userData) {
+      if (user) {
+        userData = user;
         console.log('✅ Usuario autenticado:', userData);
-        fileInput.style.display = 'block';
-        enviarBtn.style.display = 'block';
+        uploadInterface.style.display = 'block';
         noAuthMessage.style.display = 'none';
       } else {
         console.warn('⚠️ Usuario no autenticado - mostrando mensaje');
-        fileInput.style.display = 'none';
-        enviarBtn.style.display = 'none';
-        previewContainer.style.display = 'none';
+        uploadInterface.style.display = 'none';
         noAuthMessage.style.display = 'block';
       }
     }
@@ -239,7 +243,8 @@
       archivoSeleccionado = file;
       
       const sizeMB = (file.size / (1024 * 1024)).toFixed(2);
-      fileInfo.textContent = `Archivo: ${file.name} (${sizeMB} MB)`;
+      fileInfo.textContent = `📁 Archivo: ${file.name} (${sizeMB} MB)`;
+      fileInfo.style.color = '#ffd700';
       
       const reader = new FileReader();
       reader.onload = function(e) {
@@ -250,12 +255,7 @@
     });
 
     async function subirACloudinary(archivo) {
-      console.log('📤 Iniciando subida a Cloudinary...', {
-        cloudName: CLOUDINARY_CLOUD_NAME,
-        uploadPreset: CLOUDINARY_UPLOAD_PRESET,
-        fileName: archivo.name,
-        fileSize: archivo.size
-      });
+      console.log('📤 Iniciando subida a Cloudinary...');
 
       const formData = new FormData();
       formData.append('file', archivo);
@@ -273,14 +273,6 @@
         const responseData = await response.json();
         
         if (!response.ok) {
-          console.error('❌ Error respuesta Cloudinary:', {
-            status: response.status,
-            data: responseData
-          });
-          
-          if (response.status === 401) {
-            throw new Error('401: Upload Preset "image_design" no encontrado o no es "unsigned". Verifica en Cloudinary Console.');
-          }
           throw new Error(`Error ${response.status}: ${responseData.error?.message || 'Error de Cloudinary'}`);
         }
 
@@ -314,11 +306,16 @@
 
         enviarBtn.textContent = 'Enviando información...';
 
+        const userEmail = userData.email || userData.correo || 'No proporcionado';
+        const userNombre = userData.nombre || userData.displayName || 'No proporcionado';
+        const userTelefono = userData.telefono || 'No proporcionado';
+        const userDireccion = userData.direccion || 'No proporcionada';
+
         const templateParams = {
-          nombre: userData.nombre || "No proporcionado",
-          email: userData.email || "No proporcionado",
-          telefono: userData.telefono || "No proporcionado",
-          direccion: userData.direccion || "No proporcionada",
+          nombre: userNombre,
+          email: userEmail,
+          telefono: userTelefono,
+          direccion: userDireccion,
           ciudad: "Guadalajara",
           codigo_postal: "45000",
           productos: `Camisa Personalizada - Talla: ${talla}`,
@@ -328,10 +325,10 @@
           mensaje_adicional: `NUEVO PEDIDO CON DISEÑO PERSONALIZADO
 
 INFORMACIÓN DEL CLIENTE:
-Nombre: ${userData.nombre}
-Email: ${userData.email}
-Teléfono: ${userData.telefono}
-Dirección: ${userData.direccion}
+Nombre: ${userNombre}
+Email: ${userEmail}
+Teléfono: ${userTelefono}
+Dirección: ${userDireccion}
 
 DETALLES DEL PEDIDO:
 Producto: Camisa Personalizada
@@ -374,10 +371,10 @@ ${cloudinaryUrl}`
       }
     });
 
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', async function() {
       console.log('🚀 Inicializando página upload.html');
       mostrarInfoPedido();
-      cargarDatosUsuario();
+      await cargarDatosUsuario();
     });
   </script>
 </body>

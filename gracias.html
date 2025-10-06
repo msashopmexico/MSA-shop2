@@ -16,22 +16,25 @@
     .gracias-icon {
       font-size: 80px;
       margin-bottom: 20px;
+      text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
     }
     
     .gracias-mensaje {
-      background: rgba(255,255,255,0.1);
+      background: rgba(255, 255, 255, 0.1);
       padding: 30px;
       border-radius: 15px;
       margin: 30px 0;
-      border: 2px solid #2ecc71;
+      border: 2px solid #ffd700;
+      box-shadow: 0 8px 32px rgba(255, 215, 0, 0.2);
     }
     
     .info-box {
-      background: rgba(52, 152, 219, 0.2);
+      background: rgba(255, 0, 0, 0.2);
       padding: 20px;
       border-radius: 10px;
       margin: 20px 0;
-      border-left: 4px solid #3498db;
+      border-left: 4px solid #ff0000;
+      text-align: left;
     }
     
     .botones-container {
@@ -43,19 +46,46 @@
     }
     
     .btn-secundario {
-      background: #95a5a6;
+      background: #333333;
       color: white;
       padding: 12px 25px;
-      border: none;
+      border: 2px solid #ff0000;
       border-radius: 8px;
       cursor: pointer;
       font-size: 16px;
       text-decoration: none;
       display: inline-block;
+      transition: all 0.3s;
     }
     
     .btn-secundario:hover {
-      background: #7f8c8d;
+      background: #ff0000;
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(255, 0, 0, 0.3);
+    }
+    
+    @media (max-width: 768px) {
+      .gracias-container {
+        padding: 30px 15px;
+      }
+      
+      .gracias-icon {
+        font-size: 60px;
+      }
+      
+      .gracias-mensaje {
+        padding: 20px;
+      }
+      
+      .botones-container {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .btn-secundario {
+        width: 100%;
+        max-width: 250px;
+      }
     }
   </style>
 </head>
@@ -70,22 +100,22 @@
   <main>
     <div class="gracias-container">
       <div class="gracias-icon">🎉</div>
-      <h1>¡Gracias por tu compra!</h1>
+      <h1 style="color: #ffd700; text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);">¡Gracias por tu compra!</h1>
       
       <div class="gracias-mensaje">
-        <h2 style="color: #2ecc71;">Tu pedido ha sido confirmado</h2>
+        <h2 style="color: #ffd700;">Tu pedido ha sido confirmado</h2>
         <p>Hemos recibido tu diseño personalizado y estamos procesando tu pedido.</p>
       </div>
       
       <div class="info-box">
-        <h3>📧 Revisa tu correo electrónico</h3>
+        <h3 style="color: #ffd700;">📧 Revisa tu correo electrónico</h3>
         <p>Te hemos enviado un email con todos los detalles de tu compra y los siguientes pasos.</p>
-        <p><strong>Tu diseño personalizado está en producción</strong></p>
+        <p><strong style="color: #ffd700;">Tu diseño personalizado está en producción</strong></p>
       </div>
       
       <div class="info-box">
-        <h3>⏱️ Tiempo de entrega</h3>
-        <p>Tu camisa personalizada estará lista en <strong>3-5 días hábiles</strong></p>
+        <h3 style="color: #ffd700;">⏱️ Tiempo de entrega</h3>
+        <p>Tu camisa personalizada estará lista en <strong style="color: #ffd700;">3-5 días hábiles</strong></p>
         <p>Recibirás una notificación cuando tu pedido sea enviado.</p>
       </div>
 
